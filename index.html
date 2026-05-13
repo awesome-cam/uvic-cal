@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="UVic Schedule Helper - Search and explore University of Victoria course offerings">
+  <title>UVic Schedule Helper</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- HEADER -->
+    <header class="header">
+      <h1>🎓 UVic Schedule Helper</h1>
+      <p class="tagline">Explore courses and build your perfect schedule</p>
+    </header>
+
+    <!-- TAB NAVIGATION -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="query">📚 Course Query</button>
+      <button class="tab-btn" data-tab="builder">📅 Calendar Builder</button>
+    </nav>
+
+    <!-- COURSE QUERY TAB -->
+    <section id="query" class="tab-content active">
+      <h2>Course Query</h2>
+      
+      <div class="search-container">
+        <input 
+          id="courseInput" 
+          type="text"
+          placeholder="Enter course code (e.g., CSC101, MATH100)"
+          autocomplete="off"
+        >
+        <button class="search-btn" onclick="searchCourse()">Search</button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Searching for courses...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div id="error" class="error-message hidden"></div>
+
+      <!-- Results Container -->
+      <div id="results" class="results-container"></div>
+    </section>
+
+    <!-- CALENDAR BUILDER TAB -->
+    <section id="builder" class="tab-content">
+      <h2>Calendar Builder</h2>
+      
+      <div class="placeholder-section">
+        <div class="coming-soon">
+          <h3>Coming Soon! 🚀</h3>
+          <p>Build your perfect schedule with these features:</p>
+          <ul>
+            <li>✅ Add multiple courses</li>
+            <li>✅ Detect schedule conflicts</li>
+            <li>✅ Generate optimal schedule combinations</li>
+            <li>✅ Filter by preferred days/times</li>
+            <li>✅ View side-by-side comparisons</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
