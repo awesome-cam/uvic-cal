@@ -1,14 +1,32 @@
 // Configuration
-const API_BASE_URL = "https://api.example.com"; // Update with actual backend URL
+const COURSES_DATA_URL = "https://raw.githubusercontent.com/awesome-cam/uvic-cal/main/courses.json";
 
 // State Management
-let courseData = {};
+let courseData = [];
 
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
   setupTabNavigation();
   setupSearchListener();
+  loadCourseData();
 });
+
+// ============================================
+// DATA LOADING
+// ============================================
+
+async function loadCourseData() {
+  try {
+    const response = await fetch(COURSES_DATA_URL);
+    if (!response.ok) throw new Error("Failed to load course data");
+    const data = await response.json();
+    courseData = data.courses || [];
+    console.log("Course data loaded:", courseData);
+  } catch (error) {
+    console.error("Error loading course data:", error);
+    showError("Failed to load course database. Please refresh the page.");
+  }
+}
 
 // ============================================
 // TAB NAVIGATION
@@ -58,7 +76,7 @@ function setupSearchListener() {
   });
 }
 
-async function searchCourse() {
+function searchCourse() {
   const input = document.getElementById("courseInput").value.trim();
   
   // Validate input
@@ -75,90 +93,81 @@ async function searchCourse() {
   clearResults();
 
   try {
-    // Fetch from backend API
-    const response = await fetch(`${API_BASE_URL}/api/course/${courseCode}`);
+    // Search in local course data
+    const matches = findCourses(courseCode);
     
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (!matches || matches.length === 0) {
+      showError(`No courses found for: ${courseCode}. Please check the code and try again.`);
+    } else {
+      displayResults(courseCode, matches);
     }
-
-    const data = await response.json();
-    
-    // Handle successful response
-    displayResults(courseCode, data);
   } catch (error) {
-    console.error("Error fetching course:", error);
-    showError(`Could not find course: ${courseCode}. Please check the code and try again.`);
+    console.error("Error searching courses:", error);
+    showError(`Error searching for course: ${courseCode}`);
   } finally {
     showLoading(false);
   }
+}
+
+function findCourses(courseCode) {
+  // Parse course code (e.g., "BIOL186" -> subject="BIOL", number="186")
+  const match = courseCode.match(/^([A-Z]+)(\d+)?$/);
+  if (!match) return [];
+
+  const subject = match[1];
+  const number = match[2] || "";
+
+  // Search in course data
+  return courseData.filter(course => {
+    const fullCode = course.subject + course.number;
+    if (number) {
+      return fullCode === courseCode;
+    } else {
+      return course.subject === subject;
+    }
+  });
 }
 
 // ============================================
 // DISPLAY RESULTS
 // ============================================
 
-function displayResults(courseCode, data) {
+function displayResults(courseCode, courses) {
   const resultsContainer = document.getElementById("results");
-  
-  // Check if offerings exist
-  if (!data.offerings || data.offerings.length === 0) {
-    resultsContainer.innerHTML = `
-      <div class="no-results">
-        <p>No offerings found for:</p>
-        <p class="no-results-code">${courseCode}</p>
-      </div>
-    `;
-    return;
-  }
-
-  // Group offerings by term for better organization
-  const offeringsByTerm = groupOfferingsByTerm(data.offerings);
   
   let html = "";
   
-  Object.entries(offeringsByTerm).forEach(([termName, offerings]) => {
-    offerings.forEach(section => {
-      html += createCourseCard(courseCode, termName, section);
+  courses.forEach(course => {
+    course.sections.forEach(section => {
+      html += createCourseCard(course, section);
     });
   });
 
   resultsContainer.innerHTML = html;
 }
 
-function groupOfferingsByTerm(offerings) {
-  const grouped = {};
-  
-  offerings.forEach(offering => {
-    const term = offering.term_name || offering.term;
-    if (!grouped[term]) {
-      grouped[term] = [];
-    }
-    grouped[term].push(offering);
-  });
-  
-  return grouped;
-}
-
-function createCourseCard(courseCode, termName, section) {
+function createCourseCard(course, section) {
   const days = Array.isArray(section.days) 
     ? section.days.join(", ") 
     : section.days;
   
   const time = `${section.start_time} - ${section.end_time}`;
   
-  const delivery = section.delivery || "Not specified";
+  const courseCode = `${course.subject}${course.number}`;
   
   return `
     <div class="course-card">
       <div class="course-header">
         <span class="course-code">${courseCode}</span>
         <div>
-          <span class="course-section">${section.section || "N/A"}</span>
+          <span class="course-section">${section.section}</span>
+          <span class="course-type" style="margin-left: 0.5rem; padding: 0.25rem 0.5rem; background: #e0e7ff; border-radius: 4px; font-size: 0.85rem;">${section.type}</span>
         </div>
       </div>
       
-      <div class="course-term">${termName}</div>
+      <div class="course-title" style="font-size: 0.95rem; color: #666; margin: 0.5rem 0;">${course.title}</div>
+      
+      <div class="course-term">${course.term_name}</div>
       
       <div class="course-details">
         <div class="detail">
@@ -173,17 +182,22 @@ function createCourseCard(courseCode, termName, section) {
         
         <div class="detail">
           <span class="detail-label">📍 Location</span>
-          <span class="detail-value">${section.location || "TBD"}</span>
-        </div>
-        
-        <div class="detail">
-          <span class="detail-label">👨‍🏫 Instructor</span>
-          <span class="detail-value">${section.instructor || "TBD"}</span>
+          <span class="detail-value">${section.location}</span>
         </div>
         
         <div class="detail">
           <span class="detail-label">🎓 Delivery</span>
-          <span class="detail-value">${delivery}</span>
+          <span class="detail-value">${section.delivery}</span>
+        </div>
+        
+        <div class="detail">
+          <span class="detail-label">💺 Seats</span>
+          <span class="detail-value">${section.seats_available}</span>
+        </div>
+        
+        <div class="detail">
+          <span class="detail-label">📋 CRN</span>
+          <span class="detail-value">${section.crn}</span>
         </div>
       </div>
     </div>
