@@ -193,14 +193,25 @@ async function loadTermData(subject, term) {
     const fileName =
         `data/${subject}-${term}.json`;
 
-    const response =
-        await fetch(fileName);
+    try {
 
-    if (!response.ok) {
-        throw new Error(`Could not load ${fileName}`);
+        const response =
+            await fetch(fileName);
+
+        if (!response.ok) {
+            console.log(`Missing term file: ${fileName}`);
+            return null;
+        }
+
+        return await response.json();
     }
+    catch (err) {
 
-    return response.json();
+        console.log(`Failed loading: ${fileName}`);
+        console.log(err);
+
+        return null;
+    }
 }
 
 function sortSections(a, b) {
@@ -290,8 +301,8 @@ async function searchCourses() {
             );
 
         const allSections = [
-            ...septJson.data,
-            ...janJson.data
+            ...(septJson?.data || []),
+            ...(janJson?.data || [])
         ];
 
         const matches =
