@@ -39,6 +39,10 @@
             flex-wrap: wrap;
         }
 
+        input {
+            width: 260px;
+        }
+
         input,
         select,
         button {
@@ -128,6 +132,8 @@
     </div>
 
     <div id="status"></div>
+
+    <h2 id="currentCourse"></h2>
 
     <div id="results"></div>
 
@@ -268,6 +274,9 @@ async function searchCourses() {
     const status =
         document.getElementById('status');
 
+    const currentCourse =
+        document.getElementById('currentCourse');
+
     const results =
         document.getElementById('results');
 
@@ -285,6 +294,9 @@ async function searchCourses() {
 
     status.innerHTML =
         '<div>Loading...</div>';
+
+    currentCourse.innerHTML =
+        `${parsed.subject}${parsed.courseNumber}`;
 
     try {
 
