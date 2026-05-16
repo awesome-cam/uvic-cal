@@ -1,0 +1,418 @@
+[
+  {
+    "code": "ATWP",
+    "description": "Academic and Technical Writing"
+  },
+  {
+    "code": "ASE",
+    "description": "Aerospace Systems Engineering"
+  },
+  {
+    "code": "ASL",
+    "description": "American Sign Language"
+  },
+  {
+    "code": "ANTH",
+    "description": "Anthropology"
+  },
+  {
+    "code": "ART",
+    "description": "Art"
+  },
+  {
+    "code": "AE",
+    "description": "Art Education"
+  },
+  {
+    "code": "AHVS",
+    "description": "Art History &amp; Visual Studies"
+  },
+  {
+    "code": "ASTR",
+    "description": "Astronomy"
+  },
+  {
+    "code": "BIOC",
+    "description": "Biochemistry"
+  },
+  {
+    "code": "BIOL",
+    "description": "Biology"
+  },
+  {
+    "code": "BME",
+    "description": "Biomedical Engineering"
+  },
+  {
+    "code": "BUS",
+    "description": "Business"
+  },
+  {
+    "code": "CS",
+    "description": "Canadian Studies"
+  },
+  {
+    "code": "CHEM",
+    "description": "Chemistry"
+  },
+  {
+    "code": "CYC",
+    "description": "Child and Youth Care"
+  },
+  {
+    "code": "CIVE",
+    "description": "Civil Engineering"
+  },
+  {
+    "code": "COM",
+    "description": "Commerce"
+  },
+  {
+    "code": "CD",
+    "description": "Community Development"
+  },
+  {
+    "code": "CE",
+    "description": "Community Engagement"
+  },
+  {
+    "code": "CSC",
+    "description": "Computer Science"
+  },
+  {
+    "code": "CNPY",
+    "description": "Counselling Psychology"
+  },
+  {
+    "code": "CSPT",
+    "description": "Cultural, Social &amp; Political T"
+  },
+  {
+    "code": "EDCI",
+    "description": "Curriculum and Instruction"
+  },
+  {
+    "code": "DR",
+    "description": "Dispute Resolution"
+  },
+  {
+    "code": "EOS",
+    "description": "Earth and Ocean Sciences"
+  },
+  {
+    "code": "ECON",
+    "description": "Economics"
+  },
+  {
+    "code": "ED-D",
+    "description": "Ed Psyc and Leadership Studies"
+  },
+  {
+    "code": "EDUC",
+    "description": "Education"
+  },
+  {
+    "code": "ECE",
+    "description": "Electrical &amp; Computer Engineer"
+  },
+  {
+    "code": "ECS",
+    "description": "Engineer and Computer Science"
+  },
+  {
+    "code": "ENGR",
+    "description": "Engineering"
+  },
+  {
+    "code": "ENSH",
+    "description": "English"
+  },
+  {
+    "code": "ENT",
+    "description": "Entrepreneurship and Small Bus"
+  },
+  {
+    "code": "ER",
+    "description": "Environmental Restoration"
+  },
+  {
+    "code": "ES",
+    "description": "Environmental Studies"
+  },
+  {
+    "code": "EUS",
+    "description": "European Studies"
+  },
+  {
+    "code": "EPHE",
+    "description": "Exercise Sc, Phys &amp; Health Ed"
+  },
+  {
+    "code": "FA",
+    "description": "Fine Arts"
+  },
+  {
+    "code": "FORB",
+    "description": "Forest Biology"
+  },
+  {
+    "code": "FRAN",
+    "description": "French (FRAN)"
+  },
+  {
+    "code": "GNDR",
+    "description": "Gender Studies"
+  },
+  {
+    "code": "GEOG",
+    "description": "Geography"
+  },
+  {
+    "code": "GMST",
+    "description": "Germanic Studies"
+  },
+  {
+    "code": "GDS",
+    "description": "Global Development Studies"
+  },
+  {
+    "code": "GS",
+    "description": "Graduate Studies"
+  },
+  {
+    "code": "GREE",
+    "description": "Greek"
+  },
+  {
+    "code": "GRS",
+    "description": "Greek and Roman Studies"
+  },
+  {
+    "code": "HLTH",
+    "description": "Health"
+  },
+  {
+    "code": "HINF",
+    "description": "Health Information Science"
+  },
+  {
+    "code": "HSTR",
+    "description": "History"
+  },
+  {
+    "code": "HUMA",
+    "description": "Humanities"
+  },
+  {
+    "code": "ICDG",
+    "description": "Indigenous Com Dev Governance"
+  },
+  {
+    "code": "IED",
+    "description": "Indigenous Education"
+  },
+  {
+    "code": "IGOV",
+    "description": "Indigenous Governance"
+  },
+  {
+    "code": "INGH",
+    "description": "Indigenous Peoples Health"
+  },
+  {
+    "code": "IS",
+    "description": "Indigenous Studies"
+  },
+  {
+    "code": "INDW",
+    "description": "Indigenous Wellness"
+  },
+  {
+    "code": "ISP",
+    "description": "Intercultural Studies and Prac"
+  },
+  {
+    "code": "INTD",
+    "description": "Interdisciplinary"
+  },
+  {
+    "code": "INTS",
+    "description": "International Health Studies"
+  },
+  {
+    "code": "ITAL",
+    "description": "Italian"
+  },
+  {
+    "code": "LATI",
+    "description": "Latin"
+  },
+  {
+    "code": "LAS",
+    "description": "Latin American Studies"
+  },
+  {
+    "code": "LAW",
+    "description": "Law"
+  },
+  {
+    "code": "LING",
+    "description": "Linguistics"
+  },
+  {
+    "code": "MM",
+    "description": "Master in Management"
+  },
+  {
+    "code": "MGB",
+    "description": "Masters of Global Business"
+  },
+  {
+    "code": "MBA",
+    "description": "Masters-Business Administratio"
+  },
+  {
+    "code": "MATH",
+    "description": "Math"
+  },
+  {
+    "code": "MECH",
+    "description": "Mechanical Engineering"
+  },
+  {
+    "code": "MDIA",
+    "description": "Media Studies"
+  },
+  {
+    "code": "MEDS",
+    "description": "Medical Sciences"
+  },
+  {
+    "code": "MEDI",
+    "description": "Medieval Studies"
+  },
+  {
+    "code": "MICR",
+    "description": "Microbiology"
+  },
+  {
+    "code": "MLSC",
+    "description": "Molecular Life Sciences"
+  },
+  {
+    "code": "MUS",
+    "description": "Music"
+  },
+  {
+    "code": "NRSC",
+    "description": "Neuroscience"
+  },
+  {
+    "code": "NUED",
+    "description": "Nurse Educator"
+  },
+  {
+    "code": "NURS",
+    "description": "Nursing"
+  },
+  {
+    "code": "NURA",
+    "description": "Nursing Advanced Practice"
+  },
+  {
+    "code": "NUNP",
+    "description": "Nursing Practitioners"
+  },
+  {
+    "code": "NUHI",
+    "description": "Nursing/Health Info Science"
+  },
+  {
+    "code": "PAAS",
+    "description": "Pacific and Asian Studies"
+  },
+  {
+    "code": "PHIL",
+    "description": "Philosophy"
+  },
+  {
+    "code": "PHYS",
+    "description": "Physics"
+  },
+  {
+    "code": "POLI",
+    "description": "Political Science"
+  },
+  {
+    "code": "PSYC",
+    "description": "Psychology"
+  },
+  {
+    "code": "ADMN",
+    "description": "Public Administration"
+  },
+  {
+    "code": "PHSP",
+    "description": "Public Health &amp; Social Policy"
+  },
+  {
+    "code": "RCS",
+    "description": "Religion, Culture and Society"
+  },
+  {
+    "code": "SCIE",
+    "description": "Science"
+  },
+  {
+    "code": "SLST",
+    "description": "Slavic Studies"
+  },
+  {
+    "code": "SDH",
+    "description": "Social Dimensions of Health"
+  },
+  {
+    "code": "SJS",
+    "description": "Social Justice Studies"
+  },
+  {
+    "code": "SOCW",
+    "description": "Social Work"
+  },
+  {
+    "code": "SOCI",
+    "description": "Sociology"
+  },
+  {
+    "code": "SENG",
+    "description": "Software Engineering"
+  },
+  {
+    "code": "SPAN",
+    "description": "Spanish"
+  },
+  {
+    "code": "STAT",
+    "description": "Statistics"
+  },
+  {
+    "code": "ED-P",
+    "description": "Teacher Ed: Seminar &amp; Pract."
+  },
+  {
+    "code": "TS",
+    "description": "Technology and Society"
+  },
+  {
+    "code": "THEA",
+    "description": "Theatre"
+  },
+  {
+    "code": "TCA",
+    "description": "Transformative Climate Action"
+  },
+  {
+    "code": "WRIT",
+    "description": "Writing"
+  }
+]

@@ -1,73 +1,380 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="UVic Schedule Helper - Search and explore University of Victoria course offerings">
-  <title>UVic Schedule Helper</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UVic Course Search</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+        }
+
+        header {
+            background: #003c71;
+            color: white;
+            padding: 16px;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        input,
+        select,
+        button {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            cursor: pointer;
+            background: #003c71;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: #00509a;
+        }
+
+        .course-card {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .course-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .meeting {
+            background: #eef5ff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e3e3e3;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-right: 6px;
+            margin-top: 6px;
+            font-size: 14px;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <!-- HEADER -->
-    <header class="header">
-      <h1>🎓 UVic Schedule Helper</h1>
-      <p class="tagline">Explore courses and build your perfect schedule</p>
-    </header>
 
-    <!-- TAB NAVIGATION -->
-    <nav class="tabs">
-      <button class="tab-btn active" data-tab="query">📚 Course Query</button>
-      <button class="tab-btn" data-tab="builder">📅 Calendar Builder</button>
-    </nav>
+<header>
+    <h1>UVic Course Search MVP</h1>
+</header>
 
-    <!-- COURSE QUERY TAB -->
-    <section id="query" class="tab-content active">
-      <h2>Course Query</h2>
-      
-      <div class="search-container">
-        <input 
-          id="courseInput" 
-          type="text"
-          placeholder="Enter course code (e.g., CSC101, MATH100)"
-          autocomplete="off"
-        >
-        <button class="search-btn" onclick="searchCourse()">Search</button>
-      </div>
+<div class="container">
 
-      <!-- Loading State -->
-      <div id="loading" class="loading hidden">
-        <div class="spinner"></div>
-        <p>Searching for courses...</p>
-      </div>
+    <div class="controls">
 
-      <!-- Error Message -->
-      <div id="error" class="error-message hidden"></div>
+        <input
+            type="text"
+            id="courseInput"
+            placeholder="Examples: BIOL186 or CHEM102"
+        />
 
-      <!-- Results Container -->
-      <div id="results" class="results-container"></div>
-    </section>
+        <button id="searchButton">
+            Search
+        </button>
+    </div>
 
-    <!-- CALENDAR BUILDER TAB -->
-    <section id="builder" class="tab-content">
-      <h2>Calendar Builder</h2>
-      
-      <div class="placeholder-section">
-        <div class="coming-soon">
-          <h3>Coming Soon! 🚀</h3>
-          <p>Build your perfect schedule with these features:</p>
-          <ul>
-            <li>✅ Add multiple courses</li>
-            <li>✅ Detect schedule conflicts</li>
-            <li>✅ Generate optimal schedule combinations</li>
-            <li>✅ Filter by preferred days/times</li>
-            <li>✅ View side-by-side comparisons</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-  </div>
+    <div id="status"></div>
 
-  <script src="app.js"></script>
+    <div id="results"></div>
+
+</div>
+
+<script>
+
+const TERM_LABELS = {
+    "202609": "Sept",
+    "202701": "Jan"
+};
+
+function parseCourseCode(input) {
+
+    const trimmed = input.trim().toUpperCase();
+
+    const match = trimmed.match(/^([A-Z]+)\s*([0-9A-Z]+)$/);
+
+    if (!match) {
+        return null;
+    }
+
+    return {
+        subject: match[1],
+        courseNumber: match[2]
+    };
+}
+
+function formatDays(meetingTime) {
+
+    const days = [];
+
+    if (meetingTime.monday) days.push('Mon');
+    if (meetingTime.tuesday) days.push('Tue');
+    if (meetingTime.wednesday) days.push('Wed');
+    if (meetingTime.thursday) days.push('Thu');
+    if (meetingTime.friday) days.push('Fri');
+
+    return days.join(' ');
+}
+
+function formatTime(timeString) {
+
+    if (!timeString) {
+        return 'TBA';
+    }
+
+    const hours = parseInt(timeString.slice(0, 2));
+    const minutes = timeString.slice(2);
+
+    const suffix = hours >= 12 ? 'PM' : 'AM';
+
+    const adjustedHours =
+        hours % 12 === 0
+            ? 12
+            : hours % 12;
+
+    return `${adjustedHours}:${minutes} ${suffix}`;
+}
+
+async function loadTermData(subject, term) {
+
+    const fileName =
+        `data/${subject}-${term}.json`;
+
+    const response =
+        await fetch(fileName);
+
+    if (!response.ok) {
+        throw new Error(`Could not load ${fileName}`);
+    }
+
+    return response.json();
+}
+
+function sortSections(a, b) {
+
+    const termOrder = {
+        '202609': 0,
+        '202701': 1
+    };
+
+    if (termOrder[a.term] !== termOrder[b.term]) {
+        return termOrder[a.term] - termOrder[b.term];
+    }
+
+    const typeA =
+        a.scheduleTypeDescription === 'Lecture'
+            ? 0
+            : 1;
+
+    const typeB =
+        b.scheduleTypeDescription === 'Lecture'
+            ? 0
+            : 1;
+
+    if (typeA !== typeB) {
+        return typeA - typeB;
+    }
+
+    return a.sequenceNumber.localeCompare(
+        b.sequenceNumber
+    );
+}
+
+function buildMeetingString(section) {
+
+    const meetings = [];
+
+    for (const meeting of section.meetingsFaculty) {
+
+        const mt = meeting.meetingTime;
+
+        meetings.push(
+            `${formatDays(mt)} ${formatTime(mt.beginTime)}-${formatTime(mt.endTime)}`
+        );
+    }
+
+    return meetings.join(' | ');
+}
+
+async function searchCourses() {
+
+    const input =
+        document.getElementById('courseInput').value;
+
+    const status =
+        document.getElementById('status');
+
+    const results =
+        document.getElementById('results');
+
+    results.innerHTML = '';
+
+    const parsed = parseCourseCode(input);
+
+    if (!parsed) {
+
+        status.innerHTML =
+            '<div class="error">Invalid course format. Example: BIOL186</div>';
+
+        return;
+    }
+
+    status.innerHTML =
+        '<div>Loading...</div>';
+
+    try {
+
+        const septJson =
+            await loadTermData(
+                parsed.subject,
+                '202609'
+            );
+
+        const janJson =
+            await loadTermData(
+                parsed.subject,
+                '202701'
+            );
+
+        const allSections = [
+            ...septJson.data,
+            ...janJson.data
+        ];
+
+        const matches =
+            allSections.filter(section =>
+                section.courseNumber === parsed.courseNumber
+            );
+
+        matches.sort(sortSections);
+
+        status.innerHTML =
+            `<div class="success">Found ${matches.length} sections</div>`;
+
+        if (matches.length === 0) {
+
+            results.innerHTML =
+                '<p>No matching sections found.</p>';
+
+            return;
+        }
+
+        let html = `
+            <table style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="border-bottom:1px solid #ccc; text-align:left; padding:8px;">Term</th>
+                        <th style="border-bottom:1px solid #ccc; text-align:left; padding:8px;">CRN</th>
+                        <th style="border-bottom:1px solid #ccc; text-align:left; padding:8px;">Delivery</th>
+                        <th style="border-bottom:1px solid #ccc; text-align:left; padding:8px;">Type</th>
+                        <th style="border-bottom:1px solid #ccc; text-align:left; padding:8px;">Days + Times</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        for (const section of matches) {
+
+            html += `
+                <tr>
+                    <td style="padding:8px; border-bottom:1px solid #eee;">
+                        ${TERM_LABELS[section.term]}
+                    </td>
+
+                    <td style="padding:8px; border-bottom:1px solid #eee;">
+                        ${section.courseReferenceNumber}
+                    </td>
+
+                    <td style="padding:8px; border-bottom:1px solid #eee;">
+                        ${section.instructionalMethodDescription}
+                    </td>
+
+                    <td style="padding:8px; border-bottom:1px solid #eee;">
+                        ${section.scheduleTypeDescription}
+                    </td>
+
+                    <td style="padding:8px; border-bottom:1px solid #eee;">
+                        ${buildMeetingString(section)}
+                    </td>
+                </tr>
+            `;
+        }
+
+        html += `
+                </tbody>
+            </table>
+        `;
+
+        results.innerHTML = html;
+    }
+    catch (err) {
+
+        console.error(err);
+
+        status.innerHTML =
+            '<div class="error">Failed to load course data.</div>';
+    }
+}
+
+document
+    .getElementById('searchButton')
+    .addEventListener('click', searchCourses);
+
+</script>
+
 </body>
 </html>
+
