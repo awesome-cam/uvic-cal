@@ -163,6 +163,39 @@ button:hover {
     flex-wrap: wrap;
 }
 
+.header-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+    flex-wrap: wrap;
+}
+
+.coffee-button {
+
+    background: #ffdd00;
+
+    color: black;
+
+    text-decoration: none;
+
+    padding: 10px 16px;
+
+    border-radius: 6px;
+
+    font-weight: bold;
+}
+
+.coffee-button:hover {
+
+    background: #ffd000;
+}
+
 .course-entry {
 
     margin-bottom: 20px;
