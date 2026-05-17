@@ -405,6 +405,17 @@ document
         'click',
         async () => {
 
+            const output =
+                document.getElementById(
+                'validationOutput'
+            );
+
+            output.innerHTML = `
+                <div>
+                    Generating schedules...
+                </div>
+            `;
+
             const request =
                 buildRequest();
 
@@ -413,10 +424,6 @@ document
                     request
                 );
 
-            const output =
-                document.getElementById(
-                    'validationOutput'
-                );
 
             if (result.valid) {
                 const schedules =
