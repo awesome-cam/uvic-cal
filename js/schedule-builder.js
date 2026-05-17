@@ -838,7 +838,7 @@ async function solveSingleForcedSchedule(
                 bnds: {
 
                     type:
-                        glpkIntance.GLP_UP,
+                        glpkInstance.GLP_UP,
 
                     ub: 1,
 
