@@ -277,6 +277,12 @@ async function generateSchedules(
         allBundles
     );
 
+    /* EKAB */
+    console.log(
+        'BUNDLE COUNT',
+        allBundles.length
+    );
+
     /*
         Generate candidate
         schedules using

@@ -735,6 +735,12 @@ async function solveSingleForcedSchedule(
     forcedBundleId
 ) {
 
+
+    /* EKAB */
+    console.log(
+        'GENERATING CANDIDATES'
+    );
+
     const glpk =
         await GLPK();
 
