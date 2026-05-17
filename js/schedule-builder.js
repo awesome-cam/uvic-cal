@@ -242,9 +242,18 @@ scheduleBuilderRoot.innerHTML = `
 
     <div class="builder-section">
 
-        <button class="generate-button">
+
+        <button
+            class="generate-button"
+            id="generateButton"
+        >
             Generate Schedules
         </button>
+
+        <div
+            id="validationOutput"
+            style="margin-top:20px;"
+        ></div>
 
     </div>
 
@@ -322,5 +331,117 @@ function attachOrCourseButtons() {
     });
 }
 
+function buildRequest() {
+
+    const groups = [];
+
+    const groupElements =
+        document.querySelectorAll(
+            '.requirement-group'
+        );
+
+    groupElements.forEach(groupEl => {
+
+        const group = {
+
+            pick: 1,
+            courses: []
+        };
+
+        const courseEntries =
+            groupEl.querySelectorAll(
+                '.course-entry'
+            );
+
+        courseEntries.forEach(entry => {
+
+            const code =
+                entry.querySelector(
+                    'input'
+                ).value;
+
+            const selects =
+                entry.querySelectorAll(
+                    'select'
+                );
+
+            const semester =
+                selects[0].value;
+
+            const desire =
+                parseInt(
+                    selects[1].value
+                );
+
+            group.courses.push({
+
+                code,
+                semester,
+                desire
+            });
+        });
+
+        groups.push(group);
+    });
+
+    return {
+
+        groups
+    };
+}
+
 attachOrCourseButtons();
+
+document
+    .getElementById(
+        'generateButton'
+    )
+    .addEventListener(
+        'click',
+        async () => {
+
+            const request =
+                buildRequest();
+
+            const result =
+                await validateRequest(
+                    request
+                );
+
+            const output =
+                document.getElementById(
+                    'validationOutput'
+                );
+
+            if (result.valid) {
+
+                output.innerHTML = `
+
+                    <div class="success">
+
+                        All courses passed sanity check.
+
+                    </div>
+
+                `;
+            }
+            else {
+
+                output.innerHTML = `
+
+                    <div class="error">
+
+                        ${result.errors.join('<br>')}
+
+                        <br><br>
+
+                        Please use the Course Search tab
+                        to verify course availability.
+
+                    </div>
+
+                `;
+            }
+        }
+    );
 
