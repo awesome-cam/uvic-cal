@@ -386,7 +386,10 @@ function buildRequest() {
         groups:
             buildGroups(),
 
-        hardConstraints: {},
+        hardConstraints: {
+
+            availability: {}
+        },
 
         softPreferences: {}
     };
