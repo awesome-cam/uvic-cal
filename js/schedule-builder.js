@@ -993,6 +993,11 @@ async function generateCandidateSchedules(
     bundles
 ) {
 
+    /* EKAB */
+    console.log(
+        'GENERATING CANDIDATES'
+    );
+
     const anchors =
         getLectureAnchors(
             bundles,
