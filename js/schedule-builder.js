@@ -372,13 +372,18 @@ function buildRequest() {
                 parseInt(
                     selects[1].value
                 );
+            if (
+                code.trim() !== ''
+            ) {
 
-            group.courses.push({
+                group.courses.push({
 
-                code,
-                semester,
-                desire
-            });
+                    code,
+                    semester,
+                    desire
+                });
+            }
+
         });
 
         groups.push(group);
@@ -428,6 +433,10 @@ document
                         valid schedules.
 
                     </div>
+
+                    ${renderSchedules(
+                        schedules
+                    )}
 
                 `;
             }
