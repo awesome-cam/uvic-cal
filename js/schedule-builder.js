@@ -422,10 +422,6 @@ document
 
             `;
 
-            console.log(
-                'START VALIDATION'
-            );
-
             const request =
                 buildRequest();
 
@@ -434,30 +430,14 @@ document
                     request
                 );
 
-            console.log(
-                'VALIDATION DONE'
-            );
-
             if (
                 result.valid
             ) {
-
-                console.log(
-                    'START GENERATION'
-                );
 
                 const schedules =
                     await generateSchedules(
                         request
                     );
-
-                console.log(
-                    'GENERATION DONE'
-                );
-
-                console.log(
-                    schedules
-                );
 
                 output.innerHTML = `
 
@@ -469,16 +449,9 @@ document
 
                     </div>
 
-                    <pre>
-
-${JSON.stringify(
-    schedules
-        .slice(0, 1),
-    null,
-    2
-)}
-
-                    </pre>
+                    ${renderSchedules(
+                        schedules
+                    )}
 
                 `;
             }

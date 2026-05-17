@@ -32,6 +32,25 @@ const TIME_LABEL_WIDTH =
 const DAY_COLUMN_WIDTH =
     100;
 
+const COURSE_COLORS = [
+
+    '#FFCDD2',
+    '#F8BBD0',
+    '#E1BEE7',
+    '#D1C4E9',
+    '#C5CAE9',
+    '#BBDEFB',
+
+    '#B2DFDB',
+    '#C8E6C9',
+    '#DCEDC8',
+    '#FFF9C4',
+    '#FFE0B2',
+    '#FFCCBC'
+];
+
+let currentScheduleIndex = 0;
+
 function formatMinutes(
     totalMinutes
 ) {
@@ -73,6 +92,82 @@ function formatMinutes(
     );
 }
 
+function getCourseColorMap(
+    schedule
+) {
+
+    const map = {};
+
+    let colorIndex = 0;
+
+    for (
+        const section of
+        schedule.sections
+    ) {
+
+        if (
+            !map[
+                section.course
+            ]
+        ) {
+
+            map[
+                section.course
+            ] =
+
+                COURSE_COLORS[
+                    colorIndex %
+                    COURSE_COLORS.length
+                ];
+
+            colorIndex++;
+        }
+    }
+
+    return map;
+}
+
+function getComponentShortName(
+    section
+) {
+
+    const type =
+        (
+            section.type || ''
+        )
+
+        .toLowerCase();
+
+    if (
+        type.includes(
+            'lecture'
+        )
+    ) {
+
+        return 'LEC';
+    }
+
+    if (
+        type.includes(
+            'lab'
+        )
+    ) {
+
+        return 'LAB';
+    }
+
+    if (
+        type.includes(
+            'tutorial'
+        )
+    ) {
+
+        return 'TUT';
+    }
+
+    return 'SEC';
+}
+
 function renderTimeLabels() {
 
     let html = '';
@@ -111,6 +206,8 @@ function renderTimeLabels() {
                     font-size:12px;
 
                     border-top:1px solid #ddd;
+
+                    box-sizing:border-box;
                 "
             >
 
@@ -128,7 +225,8 @@ function renderTimeLabels() {
 
 function renderMeetingBlock(
     section,
-    meeting
+    meeting,
+    color
 ) {
 
     const dayIndex =
@@ -184,9 +282,9 @@ function renderMeetingBlock(
 
                 height:${height}px;
 
-                border:1px solid #333;
+                border:1px solid #444;
 
-                border-radius:6px;
+                border-radius:8px;
 
                 padding:4px;
 
@@ -194,9 +292,17 @@ function renderMeetingBlock(
 
                 font-size:11px;
 
-                background:#f3f3f3;
+                background:${color};
 
                 box-sizing:border-box;
+
+                box-shadow:
+                    0 1px 2px rgba(
+                        0,
+                        0,
+                        0,
+                        0.15
+                    );
             "
         >
 
@@ -206,12 +312,19 @@ function renderMeetingBlock(
 
             <br>
 
+            ${getComponentShortName(
+                section
+            )}
+
+            <br>
+
             ${section.sequence}
 
             <br>
 
-            CRN:
-            ${section.crn}
+            <strong>
+                ${section.crn}
+            </strong>
 
         </div>
 
@@ -220,7 +333,8 @@ function renderMeetingBlock(
 
 function renderTermCalendar(
     term,
-    sections
+    sections,
+    colorMap
 ) {
 
     const height =
@@ -238,6 +352,11 @@ function renderTermCalendar(
         sections
     ) {
 
+        const color =
+            colorMap[
+                section.course
+            ];
+
         for (
             const meeting of
             section.meetings
@@ -246,7 +365,8 @@ function renderTermCalendar(
             blocks +=
                 renderMeetingBlock(
                     section,
-                    meeting
+                    meeting,
+                    color
                 );
         }
     }
@@ -348,23 +468,76 @@ function renderCrnSummary(
     schedule
 ) {
 
+    const rows =
+        schedule.sections.map(
+            section => `
+
+                <tr>
+
+                    <td>
+                        ${section.course}
+                    </td>
+
+                    <td>
+                        ${getComponentShortName(
+                            section
+                        )}
+                    </td>
+
+                    <td>
+                        ${section.sequence}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${section.crn}
+                        </strong>
+                    </td>
+
+                </tr>
+
+            `
+        ).join('');
+
     return `
 
         <div
             style="
                 margin-top:20px;
-
-                padding:10px;
-
-                border-top:1px solid #ddd;
             "
         >
 
-            <strong>
-                All CRNs:
-            </strong>
+            <table
+                style="
+                    border-collapse:collapse;
+                    width:100%;
+                    max-width:600px;
+                "
+            >
 
-            ${schedule.crns.join(', ')}
+                <tr>
+
+                    <th align="left">
+                        Course
+                    </th>
+
+                    <th align="left">
+                        Type
+                    </th>
+
+                    <th align="left">
+                        Section
+                    </th>
+
+                    <th align="left">
+                        CRN
+                    </th>
+
+                </tr>
+
+                ${rows}
+
+            </table>
 
         </div>
 
@@ -373,8 +546,14 @@ function renderCrnSummary(
 
 function renderSchedule(
     schedule,
-    index
+    index,
+    totalSchedules
 ) {
+
+    const colorMap =
+        getCourseColorMap(
+            schedule
+        );
 
     const termCalendars =
         Object.entries(
@@ -403,7 +582,8 @@ function renderSchedule(
 
                 renderTermCalendar(
                     term,
-                    sections
+                    sections,
+                    colorMap
                 )
         )
 
@@ -418,11 +598,45 @@ function renderSchedule(
             "
         >
 
-            <h2>
+            <div
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    margin-bottom:20px;
+                "
+            >
 
-                Schedule ${index + 1}
+                <button
+                    onclick="
+                        previousSchedule()
+                    "
+                >
 
-            </h2>
+                    Previous
+
+                </button>
+
+                <strong>
+
+                    Schedule
+                    ${index + 1}
+                    of
+                    ${totalSchedules}
+
+                </strong>
+
+                <button
+                    onclick="
+                        nextSchedule()
+                    "
+                >
+
+                    Next
+
+                </button>
+
+            </div>
 
             ${termCalendars}
 
@@ -433,6 +647,62 @@ function renderSchedule(
         </div>
 
     `;
+}
+
+let lastSchedules = [];
+
+function rerenderSchedules() {
+
+    const output =
+        document.getElementById(
+            'validationOutput'
+        );
+
+    output.innerHTML = `
+
+        <div class="success">
+
+            Found
+            ${lastSchedules.length}
+            schedules.
+
+        </div>
+
+        ${renderSchedule(
+            lastSchedules[
+                currentScheduleIndex
+            ],
+            currentScheduleIndex,
+            lastSchedules.length
+        )}
+
+    `;
+}
+
+function previousSchedule() {
+
+    if (
+        currentScheduleIndex > 0
+    ) {
+
+        currentScheduleIndex--;
+
+        rerenderSchedules();
+    }
+}
+
+function nextSchedule() {
+
+    if (
+
+        currentScheduleIndex <
+        lastSchedules.length - 1
+    ) {
+
+        currentScheduleIndex++;
+
+        rerenderSchedules();
+    }
 }
 
 function renderSchedules(
@@ -454,9 +724,16 @@ function renderSchedules(
         `;
     }
 
+    lastSchedules =
+        schedules;
+
+    currentScheduleIndex =
+        0;
+
     return renderSchedule(
         schedules[0],
-        0
+        0,
+        schedules.length
     );
 }
 
