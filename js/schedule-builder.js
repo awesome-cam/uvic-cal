@@ -3,8 +3,6 @@ const scheduleBuilderRoot =
         'scheduleBuilderRoot'
     );
 
-let groupCounter = 1;
-
 const state = {
 
     groups: [
@@ -32,6 +30,51 @@ function createEmptyCourse() {
         semester: 'Either',
         desire: 5
     };
+}
+
+function parseCourseCode(code) {
+
+    const cleaned =
+        code.trim().toUpperCase();
+
+    const match =
+        cleaned.match(
+            /^([A-Z]+)([0-9A-Z]+)$/
+        );
+
+    if (!match) {
+        return null;
+    }
+
+    return {
+
+        subject: match[1],
+        courseNumber: match[2]
+    };
+}
+
+async function loadTermData(
+    subject,
+    term
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                `data/${subject}-${term}.json`
+            );
+
+        if (!response.ok) {
+            return null;
+        }
+
+        return await response.json();
+    }
+    catch {
+
+        return null;
+    }
 }
 
 function render() {
@@ -196,7 +239,10 @@ function buildAvailabilityRow(label) {
     `;
 }
 
-function buildGroupHtml(group, groupIndex) {
+function buildGroupHtml(
+    group,
+    groupIndex
+) {
 
     return `
 
@@ -212,14 +258,25 @@ function buildGroupHtml(group, groupIndex) {
 
                     Pick:
 
-                    <select
-                        class="pick-select"
-                        data-group="${groupIndex}"
-                    >
+                    <select>
 
-                        <option ${group.pick === 1 ? 'selected' : ''}>1</option>
-                        <option ${group.pick === 2 ? 'selected' : ''}>2</option>
-                        <option ${group.pick === 3 ? 'selected' : ''}>3</option>
+                        <option
+                            ${group.pick === 1 ? 'selected' : ''}
+                        >
+                            1
+                        </option>
+
+                        <option
+                            ${group.pick === 2 ? 'selected' : ''}
+                        >
+                            2
+                        </option>
+
+                        <option
+                            ${group.pick === 3 ? 'selected' : ''}
+                        >
+                            3
+                        </option>
 
                     </select>
 
@@ -262,6 +319,7 @@ function buildCourseHtml(
             <input
                 type="text"
                 placeholder="CHEM101"
+
                 value="${course.code}"
 
                 class="course-code-input"
@@ -274,22 +332,23 @@ function buildCourseHtml(
 
                 Semester:
 
-                <select
-                    class="semester-select"
+                <select>
 
-                    data-group="${groupIndex}"
-                    data-course="${courseIndex}"
-                >
-
-                    <option ${course.semester === 'Either' ? 'selected' : ''}>
+                    <option
+                        ${course.semester === 'Either' ? 'selected' : ''}
+                    >
                         Either
                     </option>
 
-                    <option ${course.semester === 'Sept' ? 'selected' : ''}>
+                    <option
+                        ${course.semester === 'Sept' ? 'selected' : ''}
+                    >
                         Sept
                     </option>
 
-                    <option ${course.semester === 'Jan' ? 'selected' : ''}>
+                    <option
+                        ${course.semester === 'Jan' ? 'selected' : ''}
+                    >
                         Jan
                     </option>
 
@@ -297,18 +356,37 @@ function buildCourseHtml(
 
                 Desire:
 
-                <select
-                    class="desire-select"
+                <select>
 
-                    data-group="${groupIndex}"
-                    data-course="${courseIndex}"
-                >
+                    <option
+                        ${course.desire == 1 ? 'selected' : ''}
+                    >
+                        1
+                    </option>
 
-                    <option ${course.desire == 1 ? 'selected' : ''}>1</option>
-                    <option ${course.desire == 2 ? 'selected' : ''}>2</option>
-                    <option ${course.desire == 3 ? 'selected' : ''}>3</option>
-                    <option ${course.desire == 4 ? 'selected' : ''}>4</option>
-                    <option ${course.desire == 5 ? 'selected' : ''}>5</option>
+                    <option
+                        ${course.desire == 2 ? 'selected' : ''}
+                    >
+                        2
+                    </option>
+
+                    <option
+                        ${course.desire == 3 ? 'selected' : ''}
+                    >
+                        3
+                    </option>
+
+                    <option
+                        ${course.desire == 4 ? 'selected' : ''}
+                    >
+                        4
+                    </option>
+
+                    <option
+                        ${course.desire == 5 ? 'selected' : ''}
+                    >
+                        5
+                    </option>
 
                 </select>
 
@@ -327,7 +405,9 @@ function buildCourseHtml(
 function attachListeners() {
 
     document
-        .getElementById('addGroupButton')
+        .getElementById(
+            'addGroupButton'
+        )
         .addEventListener(
             'click',
             () => {
