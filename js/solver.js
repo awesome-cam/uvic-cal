@@ -230,91 +230,47 @@ function scheduleSignature(
         .join('-');
 }
 
+    
 async function generateSchedules(
     request
 ) {
 
-    /*
-        Gather all bundles
-    */
+    console.log(
+        'SENDING REQUEST',
+        request
+    );
 
-    const allBundles = [];
+    const response =
+        await fetch(
 
-    for (
-        const group of
-        request.groups
-    ) {
+            'http://127.0.0.1:8000/solve',
 
-        for (
-            const course of
-            group.courses
-        ) {
+            {
 
-            const matches =
-                await getCourseMatches(
-                    course.code
-                );
+                method: 'POST',
 
-            const bundles =
-                buildCourseBundles(
-                    matches
-                );
+                headers: {
 
-            for (
-                const bundle of
-                bundles
-            ) {
+                    'Content-Type':
+                        'application/json'
+                },
 
-                allBundles.push(
-                    bundle
-                );
+                body: JSON.stringify({
+
+                    data: request
+                })
             }
-        }
-    }
-
-    console.log(
-        'ALL BUNDLES',
-        allBundles
-    );
-
-
-    /*
-        Generate candidate
-        schedules using
-        lecture anchors
-    */
-
-    const candidateSchedules =
-
-        await generateCandidateSchedules(
-
-            request,
-
-            allBundles
         );
 
+    const result =
+        await response.json();
+
     console.log(
-        'CANDIDATE SCHEDULES',
-        candidateSchedules
+        'BACKEND RESPONSE',
+        result
     );
 
-    /*
-        Convert into existing
-        renderer format
-    */
-
-    const schedules =
-        candidateSchedules.map(
-
-            candidate =>
-
-                buildScheduleObject(
-                    candidate.bundles
-                )
-        );
-
-    return schedules.slice(
-        0,
-        MAX_SCHEDULES
-    );
+    return [];
 }
+
+
