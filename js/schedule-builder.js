@@ -736,12 +736,8 @@ async function solveSingleForcedSchedule(
 ) {
 
 
-    /* EKAB */
-    console.log(
-        'GENERATING CANDIDATES'
-    );
 
-    const glpk =
+    const glpkInstance =
         await glpk();
 
     const groupModels =
@@ -842,7 +838,7 @@ async function solveSingleForcedSchedule(
                 bnds: {
 
                     type:
-                        glpk.GLP_UP,
+                        glpkIntance.GLP_UP,
 
                     ub: 1,
 
@@ -882,7 +878,7 @@ async function solveSingleForcedSchedule(
             bnds: {
 
                 type:
-                    glpk.GLP_FX,
+                    glpkInstance.GLP_FX,
 
                 ub:
                     group.pick,
@@ -915,7 +911,7 @@ async function solveSingleForcedSchedule(
         bnds: {
 
             type:
-                glpk.GLP_FX,
+                glpkInstance.GLP_FX,
 
             ub: 1,
 
@@ -931,7 +927,7 @@ async function solveSingleForcedSchedule(
         objective: {
 
             direction:
-                glpk.GLP_MAX,
+                glpkInstance.GLP_MAX,
 
             name:
                 'obj',
@@ -946,7 +942,7 @@ async function solveSingleForcedSchedule(
     };
 
     const result =
-        glpk.solve(
+        glpkInstance.solve(
             lp
         );
 
@@ -993,10 +989,6 @@ async function generateCandidateSchedules(
     bundles
 ) {
 
-    /* EKAB */
-    console.log(
-        'GENERATING CANDIDATES'
-    );
 
     const anchors =
         getLectureAnchors(

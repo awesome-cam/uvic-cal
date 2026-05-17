@@ -1052,7 +1052,7 @@ async function solveWithILP(
     bundles
 ) {
 
-    const glpk =
+    const glpkInstance =
         await glpk();
 
     const groupModels =
@@ -1166,7 +1166,7 @@ async function solveWithILP(
                 bnds: {
 
                     type:
-                        glpk.GLP_UP,
+                        glpkInstance.GLP_UP,
 
                     ub: 1,
 
@@ -1206,7 +1206,7 @@ async function solveWithILP(
             bnds: {
 
                 type:
-                    glpk.GLP_FX,
+                    glpkInstance.GLP_FX,
 
                 ub:
                     group.pick,
@@ -1225,7 +1225,7 @@ async function solveWithILP(
         objective: {
 
             direction:
-                glpk.GLP_MAX,
+                glpkInstance.GLP_MAX,
 
             name:
                 'obj',
@@ -1245,7 +1245,7 @@ async function solveWithILP(
     );
 
     const result =
-        glpk.solve(
+        glpkInstance.solve(
             lp
         );
 
