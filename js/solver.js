@@ -1,44 +1,5 @@
 const MAX_SCHEDULES = 5;
 
-function bundlesConflict(
-    bundleA,
-    bundleB
-) {
-
-    if (
-        bundleA.term !==
-        bundleB.term
-    ) {
-
-        return false;
-    }
-
-    for (
-        const sectionA of
-        bundleA.sections
-    ) {
-
-        for (
-            const sectionB of
-            bundleB.sections
-        ) {
-
-            if (
-
-                sectionsConflict(
-                    sectionA,
-                    sectionB
-                )
-            ) {
-
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
 function buildScheduleObject(
     bundles
 ) {
@@ -75,7 +36,9 @@ function buildScheduleObject(
 
         terms[
             section.term
-        ].push(section);
+        ].push(
+            section
+        );
     }
 
     return {
@@ -92,145 +55,47 @@ function buildScheduleObject(
     };
 }
 
-function shuffleArray(
-    array
+async function buildAllCourseBundles(
+    request
 ) {
 
-    const copy =
-        [...array];
+    const allCourseBundles = [];
 
     for (
-        let i = copy.length - 1;
-        i > 0;
-        i--
+        const group of
+        request.groups
     ) {
 
-        const j =
-            Math.floor(
-                Math.random() * (i + 1)
-            );
-
-        [
-            copy[i],
-            copy[j]
-        ] = [
-            copy[j],
-            copy[i]
-        ];
-    }
-
-    return copy;
-}
-
-function sortBundlesByCompactness(
-    bundles
-) {
-
-    return [...bundles].sort(
-        (
-            a,
-            b
-        ) =>
-
-            a.meetings.length -
-            b.meetings.length
-    );
-}
-
-function tryBuildGreedySchedule(
-    allCourseBundles
-) {
-
-    const chosenBundles = [];
-
-    for (
-        const courseBundles of
-        allCourseBundles
-    ) {
-
-        const shuffled =
-            shuffleArray(
-                courseBundles
-            );
-
-        const sorted =
-            sortBundlesByCompactness(
-                shuffled
-            );
-
-        let selectedBundle =
-            null;
+        const courseBundles = [];
 
         for (
-            const bundle of
-            sorted
+            const course of
+            group.courses
         ) {
 
-            let hasConflict =
-                false;
+            const matches =
+                await getCourseMatches(
+                    course.code
+                );
 
-            for (
-                const existing of
-                chosenBundles
-            ) {
+            const bundles =
+                buildCourseBundles(
+                    matches
+                );
 
-                if (
-
-                    bundlesConflict(
-                        bundle,
-                        existing
-                    )
-                ) {
-
-                    hasConflict =
-                        true;
-
-                    break;
-                }
-            }
-
-            if (
-                !hasConflict
-            ) {
-
-                selectedBundle =
-                    bundle;
-
-                break;
-            }
+            courseBundles.push(
+                ...bundles
+            );
         }
 
-        if (
-            !selectedBundle
-        ) {
-
-            return null;
-        }
-
-        chosenBundles.push(
-            selectedBundle
+        allCourseBundles.push(
+            courseBundles
         );
     }
 
-    return buildScheduleObject(
-        chosenBundles
-    );
+    return allCourseBundles;
 }
 
-function scheduleSignature(
-    schedule
-) {
-
-    return schedule.crns
-
-        .slice()
-
-        .sort()
-
-        .join('-');
-}
-
-    
 async function generateSchedules(
     request
 ) {
@@ -238,6 +103,16 @@ async function generateSchedules(
     console.log(
         'SENDING REQUEST',
         request
+    );
+
+    const allCourseBundles =
+        await buildAllCourseBundles(
+            request
+        );
+
+    console.log(
+        'ALL COURSE BUNDLES',
+        allCourseBundles
     );
 
     const response =
@@ -257,7 +132,12 @@ async function generateSchedules(
 
                 body: JSON.stringify({
 
-                    data: request
+                    data: {
+
+                        request,
+
+                        allCourseBundles
+                    }
                 })
             }
         );
@@ -270,7 +150,34 @@ async function generateSchedules(
         result
     );
 
-    return [];
+    if (
+        !result.success
+    ) {
+
+        return [];
+    }
+
+    const schedules = [];
+
+    for (
+        const backendSchedule of
+        result.schedules
+    ) {
+
+        const schedule =
+            buildScheduleObject(
+                backendSchedule.bundles
+            );
+
+        schedules.push(
+            schedule
+        );
+    }
+
+    console.log(
+        'FINAL SCHEDULES',
+        schedules
+    );
+
+    return schedules;
 }
-
-

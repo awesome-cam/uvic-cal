@@ -2,3 +2,7 @@ node_modules/
 debug.png
 after-click.png
 after-term.png
+__pycache__/
+*.pyc
+venv/
+.env
