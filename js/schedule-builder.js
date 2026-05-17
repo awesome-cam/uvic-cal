@@ -13,7 +13,7 @@ function createCourseHtml() {
 
             <input
                 type="text"
-                placeholder="CHEM101"
+                placeholder="CHEM102"
             />
 
             <div class="course-preferences">
@@ -414,12 +414,18 @@ document
                 );
 
             if (result.valid) {
+                const schedules =
+                    await generateSchedules(
+                        request
+                    );
 
                 output.innerHTML = `
 
                     <div class="success">
 
-                        All courses passed sanity check.
+                        Found
+                        ${schedules.length}
+                        valid schedules.
 
                     </div>
 
