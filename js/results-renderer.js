@@ -1,9 +1,11 @@
-const DAYS = [
+const CALENDAR_DAYS = [
+    'Sun',
     'Mon',
     'Tue',
     'Wed',
     'Thu',
-    'Fri'
+    'Fri',
+    'Sat'
 ];
 
 const TERM_LABELS = {
@@ -23,6 +25,12 @@ const CALENDAR_END =
 
 const PIXELS_PER_MINUTE =
     1;
+
+const TIME_LABEL_WIDTH =
+    60;
+
+const DAY_COLUMN_WIDTH =
+    100;
 
 function formatMinutes(
     totalMinutes
@@ -84,6 +92,7 @@ function renderTimeLabels() {
                 class="calendar-time-label"
                 style="
                     position:absolute;
+
                     top:${
                         (
                             minutes -
@@ -92,10 +101,15 @@ function renderTimeLabels() {
 
                         PIXELS_PER_MINUTE
                     }px;
+
                     left:0;
-                    width:60px;
+
+                    width:${TIME_LABEL_WIDTH}px;
+
                     height:60px;
+
                     font-size:12px;
+
                     border-top:1px solid #ddd;
                 "
             >
@@ -118,7 +132,7 @@ function renderMeetingBlock(
 ) {
 
     const dayIndex =
-        DAYS.indexOf(
+        CALENDAR_DAYS.indexOf(
             meeting.day
         );
 
@@ -146,7 +160,12 @@ function renderMeetingBlock(
         PIXELS_PER_MINUTE;
 
     const left =
-        60 + (dayIndex * 140);
+        TIME_LABEL_WIDTH +
+
+        (
+            dayIndex *
+            DAY_COLUMN_WIDTH
+        );
 
     return `
 
@@ -159,7 +178,9 @@ function renderMeetingBlock(
 
                 top:${top}px;
 
-                width:130px;
+                width:${
+                    DAY_COLUMN_WIDTH - 10
+                }px;
 
                 height:${height}px;
 
@@ -174,6 +195,8 @@ function renderMeetingBlock(
                 font-size:11px;
 
                 background:#f3f3f3;
+
+                box-sizing:border-box;
             "
         >
 
@@ -229,7 +252,7 @@ function renderTermCalendar(
     }
 
     const dayHeaders =
-        DAYS.map(
+        CALENDAR_DAYS.map(
 
             (
                 day,
@@ -239,10 +262,24 @@ function renderTermCalendar(
                 <div
                     style="
                         position:absolute;
-                        left:${60 + (index * 140)}px;
+
+                        left:${
+                            TIME_LABEL_WIDTH +
+
+                            (
+                                index *
+                                DAY_COLUMN_WIDTH
+                            )
+                        }px;
+
                         top:-30px;
-                        width:130px;
+
+                        width:${
+                            DAY_COLUMN_WIDTH - 10
+                        }px;
+
                         text-align:center;
+
                         font-weight:bold;
                     "
                 >
@@ -253,6 +290,15 @@ function renderTermCalendar(
 
             `
         ).join('');
+
+    const calendarWidth =
+
+        TIME_LABEL_WIDTH +
+
+        (
+            CALENDAR_DAYS.length *
+            DAY_COLUMN_WIDTH
+        );
 
     return `
 
@@ -273,7 +319,7 @@ function renderTermCalendar(
                 style="
                     position:relative;
 
-                    width:800px;
+                    width:${calendarWidth}px;
 
                     height:${height}px;
 
@@ -307,7 +353,9 @@ function renderCrnSummary(
         <div
             style="
                 margin-top:20px;
+
                 padding:10px;
+
                 border-top:1px solid #ddd;
             "
         >
@@ -405,16 +453,6 @@ function renderSchedules(
 
         `;
     }
-
-    /*
-        IMPORTANT:
-
-        Only render ONE schedule
-        for now.
-
-        This keeps rendering
-        extremely fast.
-    */
 
     return renderSchedule(
         schedules[0],
