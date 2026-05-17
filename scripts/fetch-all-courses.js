@@ -37,15 +37,19 @@ for (const subject of subjects) {
     const code =
         subject.code;
 
+    const description =
+        subject.description;
+
     console.log("");
     console.log("====================");
     console.log("Fetching:");
     console.log(code);
+    console.log(description);
 
     try {
 
         execSync(
-            `node scripts/fetch-subject-courses.js ${code} ${term}`,
+            `node scripts/fetch-subject-courses.js "${code}" "${description}" ${term}`,
             {
                 stdio: "inherit"
             }

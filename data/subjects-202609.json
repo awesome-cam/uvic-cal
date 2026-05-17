@@ -4,8 +4,8 @@
     "description": "Academic and Technical Writing"
   },
   {
-    "code": "ASE",
-    "description": "Aerospace Systems Engineering"
+    "code": "AGEI",
+    "description": "Ageing"
   },
   {
     "code": "ASL",
@@ -90,6 +90,10 @@
   {
     "code": "EDCI",
     "description": "Curriculum and Instruction"
+  },
+  {
+    "code": "DSST",
+    "description": "Disability Studies"
   },
   {
     "code": "DR",
@@ -236,8 +240,8 @@
     "description": "Interdisciplinary"
   },
   {
-    "code": "INTS",
-    "description": "International Health Studies"
+    "code": "IB",
+    "description": "International Business"
   },
   {
     "code": "ITAL",
@@ -258,6 +262,10 @@
   {
     "code": "LING",
     "description": "Linguistics"
+  },
+  {
+    "code": "MRNE",
+    "description": "Marine Science"
   },
   {
     "code": "MM",
@@ -282,10 +290,6 @@
   {
     "code": "MDIA",
     "description": "Media Studies"
-  },
-  {
-    "code": "MEDS",
-    "description": "Medical Sciences"
   },
   {
     "code": "MEDI",
@@ -352,12 +356,20 @@
     "description": "Public Administration"
   },
   {
+    "code": "PADR",
+    "description": "Public Admn &amp; Dispute Resolutn"
+  },
+  {
     "code": "PHSP",
     "description": "Public Health &amp; Social Policy"
   },
   {
     "code": "RCS",
     "description": "Religion, Culture and Society"
+  },
+  {
+    "code": "SLLC",
+    "description": "School of Lang, Ling and Cult"
   },
   {
     "code": "SCIE",
@@ -374,6 +386,10 @@
   {
     "code": "SJS",
     "description": "Social Justice Studies"
+  },
+  {
+    "code": "SOSC",
+    "description": "Social Sciences"
   },
   {
     "code": "SOCW",

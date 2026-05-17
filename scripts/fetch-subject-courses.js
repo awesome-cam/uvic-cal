@@ -2,13 +2,14 @@ import { chromium } from "playwright";
 import fs from "fs";
 
 const subject = process.argv[2];
-const term = process.argv[3];
+const description = process.argv[3];
+const term = process.argv[4];
 
-if (!subject || !term) {
+if (!subject || !description || !term) {
 
     console.log("Usage:");
     console.log(
-        "node scripts/fetch-subject-courses.js BIOL 202701"
+        'node scripts/fetch-subject-courses.js "PSYC" "Psychology" 202701'
     );
 
     process.exit(1);
@@ -87,11 +88,16 @@ async function run() {
 
     await page.waitForTimeout(1000);
 
-    await page.keyboard.type(subject);
+    await page.keyboard.type(description);
 
     await page.waitForTimeout(2000);
 
-    await page.keyboard.press("Enter");
+    console.log("Selecting:");
+    console.log(description);
+
+    await page.locator(
+        `#${subject}`
+    ).click();
 
     await page.waitForTimeout(1000);
 
