@@ -234,10 +234,15 @@ async function generateSchedules(
     request
 ) {
 
-    const allCourseBundles = [];
+    /*
+        Gather all bundles
+    */
+
+    const allBundles = [];
 
     for (
-        const group of request.groups
+        const group of
+        request.groups
     ) {
 
         for (
@@ -255,90 +260,60 @@ async function generateSchedules(
                     matches
                 );
 
-            if (
-                bundles.length === 0
+            for (
+                const bundle of
+                bundles
             ) {
 
-                return [];
+                allBundles.push(
+                    bundle
+                );
             }
-
-            allCourseBundles.push(
-                bundles
-            );
         }
     }
 
-    /*
-        Solve hardest courses first.
-    */
-
-    allCourseBundles.sort(
-        (
-            a,
-            b
-        ) =>
-
-            a.length -
-            b.length
+    console.log(
+        'ALL BUNDLES',
+        allBundles
     );
 
-    const schedules = [];
+    /*
+        Generate candidate
+        schedules using
+        lecture anchors
+    */
 
-    const seen =
-        new Set();
+    const candidateSchedules =
 
-    let attempts = 0;
+        await generateCandidateSchedules(
 
-    const MAX_ATTEMPTS = 100;
+            request,
 
-    while (
+            allBundles
+        );
 
-        schedules.length <
+    console.log(
+        'CANDIDATE SCHEDULES',
+        candidateSchedules
+    );
+
+    /*
+        Convert into existing
+        renderer format
+    */
+
+    const schedules =
+        candidateSchedules.map(
+
+            candidate =>
+
+                buildScheduleObject(
+                    candidate.bundles
+                )
+        );
+
+    return schedules.slice(
+        0,
         MAX_SCHEDULES
-
-        &&
-
-        attempts <
-        MAX_ATTEMPTS
-    ) {
-
-        attempts++;
-
-        const schedule =
-            tryBuildGreedySchedule(
-                allCourseBundles
-            );
-
-        if (
-            !schedule
-        ) {
-
-            continue;
-        }
-
-        const signature =
-            scheduleSignature(
-                schedule
-            );
-
-        if (
-            seen.has(
-                signature
-            )
-        ) {
-
-            continue;
-        }
-
-        seen.add(
-            signature
-        );
-
-        schedules.push(
-            schedule
-        );
-    }
-
-    return schedules;
+    );
 }
-
