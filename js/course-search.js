@@ -1,9 +1,9 @@
-const TERM_LABELS = {
+const COURSE_SEARCH_TERM_LABELS = {
     "202609": "Sept",
     "202701": "Jan"
 };
 
-function parseCourseCode(input) {
+function courseSearchParseCourseCode(input) {
 
     const trimmed = input.trim().toUpperCase();
 
@@ -19,7 +19,7 @@ function parseCourseCode(input) {
     };
 }
 
-function formatDays(meetingTime) {
+function courseSearchFormatDays(meetingTime) {
 
     const days = [];
 
@@ -28,11 +28,13 @@ function formatDays(meetingTime) {
     if (meetingTime.wednesday) days.push('Wed');
     if (meetingTime.thursday) days.push('Thu');
     if (meetingTime.friday) days.push('Fri');
+    if (meetingTime.saturday) days.push('Sat');
+    if (meetingTime.sunday) days.push('Sun');
 
     return days.join(' ');
 }
 
-function formatTime(timeString) {
+function courseSearchFormatTime(timeString) {
 
     if (!timeString) {
         return 'TBA';
@@ -51,7 +53,10 @@ function formatTime(timeString) {
     return `${adjustedHours}:${minutes} ${suffix}`;
 }
 
-async function loadTermData(subject, term) {
+async function courseSearchLoadTermData(
+    subject,
+    term
+) {
 
     const fileName =
         `data/${subject}-${term}.json`;
@@ -62,7 +67,11 @@ async function loadTermData(subject, term) {
             await fetch(fileName);
 
         if (!response.ok) {
-            console.log(`Missing term file: ${fileName}`);
+
+            console.log(
+                `Missing term file: ${fileName}`
+            );
+
             return null;
         }
 
@@ -70,22 +79,35 @@ async function loadTermData(subject, term) {
     }
     catch (err) {
 
-        console.log(`Failed loading: ${fileName}`);
+        console.log(
+            `Failed loading: ${fileName}`
+        );
+
         console.log(err);
 
         return null;
     }
 }
 
-function sortSections(a, b) {
+function courseSearchSortSections(
+    a,
+    b
+) {
 
     const termOrder = {
         '202609': 0,
         '202701': 1
     };
 
-    if (termOrder[a.term] !== termOrder[b.term]) {
-        return termOrder[a.term] - termOrder[b.term];
+    if (
+        termOrder[a.term] !==
+        termOrder[b.term]
+    ) {
+
+        return (
+            termOrder[a.term] -
+            termOrder[b.term]
+        );
     }
 
     const typeA =
@@ -99,6 +121,7 @@ function sortSections(a, b) {
             : 1;
 
     if (typeA !== typeB) {
+
         return typeA - typeB;
     }
 
@@ -107,44 +130,71 @@ function sortSections(a, b) {
     );
 }
 
-function buildMeetingString(section) {
+function courseSearchBuildMeetingString(
+    section
+) {
 
     const meetings = [];
 
-    for (const meeting of section.meetingsFaculty) {
+    for (
+        const meeting of
+        section.meetingsFaculty
+    ) {
 
-        const mt = meeting.meetingTime;
+        const mt =
+            meeting.meetingTime;
 
         meetings.push(
-            `${formatDays(mt)} ${formatTime(mt.beginTime)}-${formatTime(mt.endTime)}`
+
+            `${courseSearchFormatDays(mt)} ` +
+
+            `${courseSearchFormatTime(mt.beginTime)}` +
+
+            `-` +
+
+            `${courseSearchFormatTime(mt.endTime)}`
         );
     }
 
     return meetings.join(' | ');
 }
 
-async function searchCourses() {
+async function courseSearchRun() {
 
     const input =
-        document.getElementById('courseInput').value;
+        document.getElementById(
+            'courseInput'
+        ).value;
 
     const status =
-        document.getElementById('status');
+        document.getElementById(
+            'status'
+        );
 
     const currentCourse =
-        document.getElementById('currentCourse');
+        document.getElementById(
+            'currentCourse'
+        );
 
     const results =
-        document.getElementById('results');
+        document.getElementById(
+            'results'
+        );
 
     results.innerHTML = '';
 
-    const parsed = parseCourseCode(input);
+    const parsed =
+        courseSearchParseCourseCode(
+            input
+        );
 
     if (!parsed) {
 
         status.innerHTML =
-            '<div class="error">Invalid course format. Example: BIOL186</div>';
+            '<div class="error">' +
+            'Invalid course format. ' +
+            'Example: BIOL186' +
+            '</div>';
 
         return;
     }
@@ -158,13 +208,13 @@ async function searchCourses() {
     try {
 
         const septJson =
-            await loadTermData(
+            await courseSearchLoadTermData(
                 parsed.subject,
                 '202609'
             );
 
         const janJson =
-            await loadTermData(
+            await courseSearchLoadTermData(
                 parsed.subject,
                 '202701'
             );
@@ -175,14 +225,24 @@ async function searchCourses() {
         ];
 
         const matches =
-            allSections.filter(section =>
-                section.courseNumber === parsed.courseNumber
+            allSections.filter(
+                section =>
+
+                    section.courseNumber ===
+                    parsed.courseNumber
             );
 
-        matches.sort(sortSections);
+        matches.sort(
+            courseSearchSortSections
+        );
 
         status.innerHTML =
-            `<div class="success">Found ${matches.length} sections</div>`;
+
+            `<div class="success">` +
+
+            `Found ${matches.length} sections` +
+
+            `</div>`;
 
         if (matches.length === 0) {
 
@@ -193,49 +253,171 @@ async function searchCourses() {
         }
 
         let html = `
-            <table style="width:100%; border-collapse: collapse;">
+
+            <table
+                style="
+                    width:100%;
+                    border-collapse:collapse;
+                "
+            >
+
                 <thead>
+
                     <tr>
-                        <th style="border-bottom:1px solid #ccc; text-align:left; padding:8px;">Term</th>
-                        <th style="border-bottom:1px solid #ccc; text-align:left; padding:8px;">CRN</th>
-                        <th style="border-bottom:1px solid #ccc; text-align:left; padding:8px;">Delivery</th>
-                        <th style="border-bottom:1px solid #ccc; text-align:left; padding:8px;">Type</th>
-                        <th style="border-bottom:1px solid #ccc; text-align:left; padding:8px;">Days + Times</th>
+
+                        <th
+                            style="
+                                border-bottom:1px solid #ccc;
+                                text-align:left;
+                                padding:8px;
+                            "
+                        >
+                            Term
+                        </th>
+
+                        <th
+                            style="
+                                border-bottom:1px solid #ccc;
+                                text-align:left;
+                                padding:8px;
+                            "
+                        >
+                            CRN
+                        </th>
+
+                        <th
+                            style="
+                                border-bottom:1px solid #ccc;
+                                text-align:left;
+                                padding:8px;
+                            "
+                        >
+                            Delivery
+                        </th>
+
+                        <th
+                            style="
+                                border-bottom:1px solid #ccc;
+                                text-align:left;
+                                padding:8px;
+                            "
+                        >
+                            Type
+                        </th>
+
+                        <th
+                            style="
+                                border-bottom:1px solid #ccc;
+                                text-align:left;
+                                padding:8px;
+                            "
+                        >
+                            Days + Times
+                        </th>
+
                     </tr>
+
                 </thead>
+
                 <tbody>
+
         `;
 
-        for (const section of matches) {
+        for (
+            const section of
+            matches
+        ) {
 
             html += `
+
                 <tr>
-                    <td style="padding:8px; border-bottom:1px solid #eee;">
-                        ${TERM_LABELS[section.term]}
+
+                    <td
+                        style="
+                            padding:8px;
+                            border-bottom:1px solid #eee;
+                        "
+                    >
+
+                        ${
+                            COURSE_SEARCH_TERM_LABELS[
+                                section.term
+                            ]
+                        }
+
                     </td>
 
-                    <td style="padding:8px; border-bottom:1px solid #eee;">
-                        ${section.courseReferenceNumber}
+                    <td
+                        style="
+                            padding:8px;
+                            border-bottom:1px solid #eee;
+                        "
+                    >
+
+                        <strong>
+
+                            ${
+                                section.courseReferenceNumber
+                            }
+
+                        </strong>
+
                     </td>
 
-                    <td style="padding:8px; border-bottom:1px solid #eee;">
-                        ${section.instructionalMethodDescription}
+                    <td
+                        style="
+                            padding:8px;
+                            border-bottom:1px solid #eee;
+                        "
+                    >
+
+                        ${
+                            section
+                                .instructionalMethodDescription
+                        }
+
                     </td>
 
-                    <td style="padding:8px; border-bottom:1px solid #eee;">
-                        ${section.scheduleTypeDescription}
+                    <td
+                        style="
+                            padding:8px;
+                            border-bottom:1px solid #eee;
+                        "
+                    >
+
+                        ${
+                            section
+                                .scheduleTypeDescription
+                        }
+
                     </td>
 
-                    <td style="padding:8px; border-bottom:1px solid #eee;">
-                        ${buildMeetingString(section)}
+                    <td
+                        style="
+                            padding:8px;
+                            border-bottom:1px solid #eee;
+                        "
+                    >
+
+                        ${
+                            courseSearchBuildMeetingString(
+                                section
+                            )
+                        }
+
                     </td>
+
                 </tr>
+
             `;
         }
 
         html += `
+
                 </tbody>
+
             </table>
+
         `;
 
         results.innerHTML = html;
@@ -245,13 +427,21 @@ async function searchCourses() {
         console.error(err);
 
         status.innerHTML =
-            '<div class="error">Failed to load course data.</div>';
+
+            '<div class="error">' +
+
+            'Failed to load course data.' +
+
+            '</div>';
     }
 }
 
 document
-    .getElementById('searchButton')
-    .addEventListener('click', searchCourses);
-
-
+    .getElementById(
+        'searchButton'
+    )
+    .addEventListener(
+        'click',
+        courseSearchRun
+    );
 

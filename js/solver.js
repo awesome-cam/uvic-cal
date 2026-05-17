@@ -1,4 +1,4 @@
-const MAX_SCHEDULES = 10;
+const MAX_SCHEDULES = 5;
 
 function bundlesConflict(
     bundleA,
