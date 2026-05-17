@@ -1,8 +1,100 @@
+function bundlesConflict(
+    bundleA,
+    bundleB
+) {
+
+    if (
+        bundleA.term !==
+        bundleB.term
+    ) {
+
+        return false;
+    }
+
+    for (
+        const sectionA of
+        bundleA.sections
+    ) {
+
+        for (
+            const sectionB of
+            bundleB.sections
+        ) {
+
+            if (
+
+                sectionsConflict(
+                    sectionA,
+                    sectionB
+                )
+            ) {
+
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function buildScheduleObject(
+    bundles
+) {
+
+    const sections =
+        bundles.flatMap(
+            bundle =>
+                bundle.sections
+        );
+
+    const crns =
+        sections.map(
+            section =>
+                section.crn
+        );
+
+    const terms = {};
+
+    for (
+        const section of
+        sections
+    ) {
+
+        if (
+            !terms[
+                section.term
+            ]
+        ) {
+
+            terms[
+                section.term
+            ] = [];
+        }
+
+        terms[
+            section.term
+        ].push(section);
+    }
+
+    return {
+
+        bundles,
+
+        sections,
+
+        crns,
+
+        terms,
+
+        score: 0
+    };
+}
+
 async function generateSchedules(
     request
 ) {
 
-    const allCourseSections = [];
+    const allCourseBundles = [];
 
     for (
         const group of request.groups
@@ -18,13 +110,13 @@ async function generateSchedules(
                     course.code
                 );
 
-            const normalized =
-                normalizeSections(
+            const bundles =
+                buildCourseBundles(
                     matches
                 );
 
-            allCourseSections.push(
-                normalized
+            allCourseBundles.push(
+                bundles
             );
         }
     }
@@ -33,61 +125,69 @@ async function generateSchedules(
 
     function backtrack(
         index,
-        currentSchedule
+        currentBundles
     ) {
 
         if (
             index ===
-            allCourseSections.length
+            allCourseBundles.length
         ) {
 
-            schedules.push([
-                ...currentSchedule
-            ]);
+            schedules.push(
+
+                buildScheduleObject(
+                    currentBundles
+                )
+            );
 
             return;
         }
 
-        const currentSections =
-            allCourseSections[index];
+        const candidateBundles =
+            allCourseBundles[index];
 
         for (
-            const section of
-            currentSections
+            const bundle of
+            candidateBundles
         ) {
 
-            let hasConflict = false;
+            let hasConflict =
+                false;
 
             for (
                 const existing of
-                currentSchedule
+                currentBundles
             ) {
 
                 if (
 
-                    sectionsConflict(
-                        section,
+                    bundlesConflict(
+                        bundle,
                         existing
                     )
                 ) {
 
-                    hasConflict = true;
+                    hasConflict =
+                        true;
+
                     break;
                 }
             }
 
-            if (!hasConflict) {
+            if (
+                !hasConflict
+            ) {
 
-                currentSchedule.push(
-                    section
+                currentBundles.push(
+                    bundle
                 );
 
                 backtrack(
                     index + 1,
-                    currentSchedule
+                    currentBundles
                 );
 
-                currentSchedule.pop();
+                currentBundles.pop();
             }
         }
     }
@@ -96,3 +196,4 @@ async function generateSchedules(
 
     return schedules;
 }
+

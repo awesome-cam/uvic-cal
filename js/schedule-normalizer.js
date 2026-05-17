@@ -40,96 +40,58 @@ function normalizeMeeting(
             meetingTime.endTime
         );
 
-    if (
-        meetingTime.monday
-    ) {
+    const addMeeting = (
+        enabled,
+        day
+    ) => {
+
+        if (!enabled) {
+            return;
+        }
 
         meetings.push({
 
-            day: 'Mon',
+            day,
 
             startMinutes,
             endMinutes
         });
-    }
+    };
 
-    if (
-        meetingTime.tuesday
-    ) {
+    addMeeting(
+        meetingTime.monday,
+        'Mon'
+    );
 
-        meetings.push({
+    addMeeting(
+        meetingTime.tuesday,
+        'Tue'
+    );
 
-            day: 'Tue',
+    addMeeting(
+        meetingTime.wednesday,
+        'Wed'
+    );
 
-            startMinutes,
-            endMinutes
-        });
-    }
+    addMeeting(
+        meetingTime.thursday,
+        'Thu'
+    );
 
-    if (
-        meetingTime.wednesday
-    ) {
+    addMeeting(
+        meetingTime.friday,
+        'Fri'
+    );
 
-        meetings.push({
+    addMeeting(
+        meetingTime.saturday,
+        'Sat'
+    );
 
-            day: 'Wed',
-
-            startMinutes,
-            endMinutes
-        });
-    }
-
-    if (
-        meetingTime.thursday
-    ) {
-
-        meetings.push({
-
-            day: 'Thu',
-
-            startMinutes,
-            endMinutes
-        });
-    }
-
-    if (
-        meetingTime.friday
-    ) {
-
-        meetings.push({
-
-            day: 'Fri',
-
-            startMinutes,
-            endMinutes
-        });
-    }
-
-    if (
-        meetingTime.saturday
-    ) {
-
-        meetings.push({
-
-            day: 'Sat',
-
-            startMinutes,
-            endMinutes
-        });
-    }
-
-    if (
-        meetingTime.sunday
-    ) {
-
-        meetings.push({
-
-            day: 'Sun',
-
-            startMinutes,
-            endMinutes
-        });
-    }
+    addMeeting(
+        meetingTime.sunday,
+        'Sun'
+    );
 
     return meetings;
 }
@@ -160,6 +122,45 @@ function normalizeSection(
         );
     }
 
+    const type =
+        (
+            rawSection
+                .scheduleTypeDescription || ''
+        )
+            .trim()
+            .toLowerCase();
+
+    let componentType =
+        'other';
+
+    if (
+        type.includes(
+            'lecture'
+        )
+    ) {
+
+        componentType =
+            'lecture';
+    }
+    else if (
+        type.includes(
+            'lab'
+        )
+    ) {
+
+        componentType =
+            'lab';
+    }
+    else if (
+        type.includes(
+            'tutorial'
+        )
+    ) {
+
+        componentType =
+            'tutorial';
+    }
+
     return {
 
         crn:
@@ -184,6 +185,8 @@ function normalizeSection(
             rawSection
                 .scheduleTypeDescription,
 
+        componentType,
+
         term:
             rawSection.term,
 
@@ -205,5 +208,169 @@ function normalizeSections(
     return rawSections.map(
         normalizeSection
     );
+}
+
+function buildCourseBundles(
+    rawSections
+) {
+
+    const normalized =
+        normalizeSections(
+            rawSections
+        );
+
+    const grouped =
+        {};
+
+    for (
+        const section of
+        normalized
+    ) {
+
+        const key =
+
+            section.course +
+            '-' +
+            section.term;
+
+        if (!grouped[key]) {
+
+            grouped[key] = {
+
+                lectures: [],
+                labs: [],
+                tutorials: [],
+                others: []
+            };
+        }
+
+        if (
+            section.componentType ===
+            'lecture'
+        ) {
+
+            grouped[key]
+                .lectures
+                .push(section);
+        }
+        else if (
+            section.componentType ===
+            'lab'
+        ) {
+
+            grouped[key]
+                .labs
+                .push(section);
+        }
+        else if (
+            section.componentType ===
+            'tutorial'
+        ) {
+
+            grouped[key]
+                .tutorials
+                .push(section);
+        }
+        else {
+
+            grouped[key]
+                .others
+                .push(section);
+        }
+    }
+
+    const bundles = [];
+
+    for (
+        const [
+            key,
+            group
+        ] of Object.entries(
+            grouped
+        )
+    ) {
+
+        const lectures =
+            group.lectures.length > 0
+                ? group.lectures
+                : [null];
+
+        const labs =
+            group.labs.length > 0
+                ? group.labs
+                : [null];
+
+        const tutorials =
+            group.tutorials.length > 0
+                ? group.tutorials
+                : [null];
+
+        for (
+            const lecture of
+            lectures
+        ) {
+
+            for (
+                const lab of
+                labs
+            ) {
+
+                for (
+                    const tutorial of
+                    tutorials
+                ) {
+
+                    const sections = [
+
+                        lecture,
+                        lab,
+                        tutorial,
+
+                        ...group.others
+                    ]
+
+                    .filter(Boolean);
+
+                    const meetings =
+                        sections.flatMap(
+                            section =>
+                                section.meetings
+                        );
+
+                    const crns =
+                        sections.map(
+                            section =>
+                                section.crn
+                        );
+
+                    bundles.push({
+
+                        bundleId:
+                            crns.join('-'),
+
+                        course:
+                            sections[0]
+                                .course,
+
+                        term:
+                            sections[0]
+                                .term,
+
+                        title:
+                            sections[0]
+                                .title,
+
+                        sections,
+
+                        meetings,
+
+                        crns
+                    });
+                }
+            }
+        }
+    }
+
+    return bundles;
 }
 
