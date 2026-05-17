@@ -147,20 +147,6 @@ function createGroupHtml(
 
                 </strong>
 
-                <div>
-
-                    Pick:
-
-                    <select class="pick-count-select">
-
-                        <option selected>1</option>
-                        <option>2</option>
-                        <option>3</option>
-
-                    </select>
-
-                </div>
-
             </div>
 
             <div class="courses-container">
@@ -195,108 +181,8 @@ scheduleBuilderRoot.innerHTML = `
     <div class="builder-section">
 
         <h3>
-            General Preferences
-        </h3>
-
-        <div class="preference-row">
-
-            <label>
-                Number of days:
-            </label>
-
-            <select id="daysPreference">
-
-                <option selected>
-                    Less
-                </option>
-
-                <option>
-                    Balanced
-                </option>
-
-                <option>
-                    More
-                </option>
-
-            </select>
-
-        </div>
-
-        <div class="preference-row">
-
-            <label>
-                Breaks during the day:
-            </label>
-
-            <select id="breaksPreference">
-
-                <option selected>
-                    Less
-                </option>
-
-                <option>
-                    Balanced
-                </option>
-
-                <option>
-                    More
-                </option>
-
-            </select>
-
-        </div>
-
-        <div class="preference-row">
-
-            <label>
-                Face-to-face lectures:
-            </label>
-
-            <select id="deliveryPreference">
-
-                <option>
-                    All
-                </option>
-
-                <option>
-                    Most
-                </option>
-
-                <option>
-                    Some
-                </option>
-
-                <option>
-                    Less
-                </option>
-
-                <option>
-                    None
-                </option>
-
-            </select>
-
-        </div>
-
-    </div>
-
-    <div class="builder-section">
-
-        <h3>
             Course Groups
         </h3>
-
-        <p class="course-group-help">
-
-            For most simple usage,
-            just pick 1 course per
-            course group.
-
-            Course groups allow
-            OR logic for more
-            complicated requests.
-
-        </p>
 
         <div id="groupsContainer">
 
@@ -417,61 +303,6 @@ function attachOrCourseButtons() {
     });
 }
 
-function buildAvailability() {
-
-    const availability = {};
-
-    const checkboxes =
-        document.querySelectorAll(
-            '.availability-table input[type="checkbox"]'
-        );
-
-    checkboxes.forEach(
-        checkbox => {
-
-            const day =
-                checkbox.dataset.day;
-
-            const timeBlock =
-                checkbox.dataset
-                    .timeBlock;
-
-            if (
-                !availability[day]
-            ) {
-
-                availability[day] = {};
-            }
-
-            availability[day][timeBlock] =
-                checkbox.checked;
-        }
-    );
-
-    return availability;
-}
-
-function buildPreferences() {
-
-    return {
-
-        numberOfDays:
-            document.getElementById(
-                'daysPreference'
-            ).value,
-
-        breaks:
-            document.getElementById(
-                'breaksPreference'
-            ).value,
-
-        delivery:
-            document.getElementById(
-                'deliveryPreference'
-            ).value
-    };
-}
-
 function buildGroups() {
 
     const groups = [];
@@ -484,19 +315,9 @@ function buildGroups() {
     groupElements.forEach(
         groupEl => {
 
-            const pick =
-                parseInt(
-
-                    groupEl
-                        .querySelector(
-                            '.pick-count-select'
-                        )
-                        .value
-                );
-
             const group = {
 
-                pick,
+                pick: 1,
 
                 courses: []
             };
@@ -565,14 +386,9 @@ function buildRequest() {
         groups:
             buildGroups(),
 
-        hardConstraints: {
+        hardConstraints: {},
 
-            availability:
-                buildAvailability()
-        },
-
-        softPreferences:
-            buildPreferences()
+        softPreferences: {}
     };
 }
 
@@ -603,6 +419,10 @@ document
 
             `;
 
+            console.log(
+                'START VALIDATION'
+            );
+
             const request =
                 buildRequest();
 
@@ -611,14 +431,30 @@ document
                     request
                 );
 
+            console.log(
+                'VALIDATION DONE'
+            );
+
             if (
                 result.valid
             ) {
+
+                console.log(
+                    'START GENERATION'
+                );
 
                 const schedules =
                     await generateSchedules(
                         request
                     );
+
+                console.log(
+                    'GENERATION DONE'
+                );
+
+                console.log(
+                    schedules
+                );
 
                 output.innerHTML = `
 
@@ -626,13 +462,20 @@ document
 
                         Found
                         ${schedules.length}
-                        valid schedules.
+                        schedules.
 
                     </div>
 
-                    ${renderSchedules(
-                        schedules
-                    )}
+                    <pre>
+
+${JSON.stringify(
+    schedules
+        .slice(0, 1),
+    null,
+    2
+)}
+
+                    </pre>
 
                 `;
             }
@@ -643,11 +486,6 @@ document
                     <div class="error">
 
                         ${result.errors.join('<br>')}
-
-                        <br><br>
-
-                        Please use the Course Search tab
-                        to verify course availability.
 
                     </div>
 
