@@ -29,53 +29,70 @@ async function generateSchedules(
         }
     }
 
-    if (
-        allCourseSections.length === 1
+    const schedules = [];
+
+    function backtrack(
+        index,
+        currentSchedule
     ) {
 
-        return allCourseSections[0]
-            .map(section => [
-
-                section
-            ]);
-    }
-
-    if (
-        allCourseSections.length === 2
-    ) {
-
-        const schedules = [];
-
-        for (
-            const sectionA of
-            allCourseSections[0]
+        if (
+            index ===
+            allCourseSections.length
         ) {
 
+            schedules.push([
+                ...currentSchedule
+            ]);
+
+            return;
+        }
+
+        const currentSections =
+            allCourseSections[index];
+
+        for (
+            const section of
+            currentSections
+        ) {
+
+            let hasConflict = false;
+
             for (
-                const sectionB of
-                allCourseSections[1]
+                const existing of
+                currentSchedule
             ) {
 
                 if (
 
-                    !sectionsConflict(
-                        sectionA,
-                        sectionB
+                    sectionsConflict(
+                        section,
+                        existing
                     )
                 ) {
 
-                    schedules.push([
-
-                        sectionA,
-                        sectionB
-                    ]);
+                    hasConflict = true;
+                    break;
                 }
             }
-        }
 
-        return schedules;
+            if (!hasConflict) {
+
+                currentSchedule.push(
+                    section
+                );
+
+                backtrack(
+                    index + 1,
+                    currentSchedule
+                );
+
+                currentSchedule.pop();
+            }
+        }
     }
 
-    return [];
-}
+    backtrack(0, []);
 
+    return schedules;
+}
