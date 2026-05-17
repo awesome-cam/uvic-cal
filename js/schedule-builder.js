@@ -742,7 +742,7 @@ async function solveSingleForcedSchedule(
     );
 
     const glpk =
-        await GLPK();
+        await glpk();
 
     const groupModels =
         buildGroupModels(

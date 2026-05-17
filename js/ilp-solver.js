@@ -1053,7 +1053,7 @@ async function solveWithILP(
 ) {
 
     const glpk =
-        await GLPK();
+        await glpk();
 
     const groupModels =
         buildGroupModels(
