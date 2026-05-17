@@ -23,6 +23,7 @@ scheduleBuilderRoot.innerHTML = `
             </tr>
 
             <tr>
+
                 <td>Morning</td>
 
                 <td><input type="checkbox" checked /></td>
@@ -32,9 +33,11 @@ scheduleBuilderRoot.innerHTML = `
                 <td><input type="checkbox" checked /></td>
                 <td><input type="checkbox" checked /></td>
                 <td><input type="checkbox" checked /></td>
+
             </tr>
 
             <tr>
+
                 <td>Afternoon</td>
 
                 <td><input type="checkbox" checked /></td>
@@ -44,9 +47,11 @@ scheduleBuilderRoot.innerHTML = `
                 <td><input type="checkbox" checked /></td>
                 <td><input type="checkbox" checked /></td>
                 <td><input type="checkbox" checked /></td>
+
             </tr>
 
             <tr>
+
                 <td>Evening</td>
 
                 <td><input type="checkbox" checked /></td>
@@ -56,6 +61,7 @@ scheduleBuilderRoot.innerHTML = `
                 <td><input type="checkbox" checked /></td>
                 <td><input type="checkbox" checked /></td>
                 <td><input type="checkbox" checked /></td>
+
             </tr>
 
         </table>
@@ -72,16 +78,13 @@ scheduleBuilderRoot.innerHTML = `
                 Number of days:
             </label>
 
-            <input
-                type="range"
-                min="1"
-                max="5"
-                value="3"
-            />
+            <select>
 
-            <span>
-                More ← → Less
-            </span>
+                <option>Less</option>
+                <option selected>Balanced</option>
+                <option>More</option>
+
+            </select>
 
         </div>
 
@@ -91,16 +94,13 @@ scheduleBuilderRoot.innerHTML = `
                 Breaks during the day:
             </label>
 
-            <input
-                type="range"
-                min="1"
-                max="5"
-                value="3"
-            />
+            <select>
 
-            <span>
-                More ← → Less
-            </span>
+                <option>Less</option>
+                <option selected>Balanced</option>
+                <option>More</option>
+
+            </select>
 
         </div>
 
@@ -154,7 +154,7 @@ scheduleBuilderRoot.innerHTML = `
 
                 <input
                     type="text"
-                    placeholder="Course code (Example: CHEM101)"
+                    placeholder="CHEM101"
                 />
 
                 <div class="course-preferences">
@@ -171,12 +171,15 @@ scheduleBuilderRoot.innerHTML = `
 
                     Desire:
 
-                    <input
-                        type="range"
-                        min="1"
-                        max="5"
-                        value="5"
-                    />
+                    <select>
+
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option selected>5</option>
+
+                    </select>
 
                 </div>
 
@@ -190,7 +193,7 @@ scheduleBuilderRoot.innerHTML = `
 
                 <input
                     type="text"
-                    placeholder="Course code (Example: CHEM100)"
+                    placeholder="CHEM100"
                 />
 
                 <div class="course-preferences">
@@ -207,12 +210,15 @@ scheduleBuilderRoot.innerHTML = `
 
                     Desire:
 
-                    <input
-                        type="range"
-                        min="1"
-                        max="5"
-                        value="5"
-                    />
+                    <select>
+
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option selected>5</option>
+
+                    </select>
 
                 </div>
 

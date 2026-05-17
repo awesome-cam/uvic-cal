@@ -10,7 +10,7 @@ header {
 
     background: #003c71;
     color: white;
-    padding: 16px;
+    padding: 16px 24px;
 }
 
 h1 {
@@ -44,12 +44,10 @@ h1 {
 
 .container {
 
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 24px;
 }
 
 .controls {
@@ -60,9 +58,9 @@ h1 {
     flex-wrap: wrap;
 }
 
-input {
+input[type="text"] {
 
-    width: 260px;
+    width: 320px;
 }
 
 input,
@@ -107,5 +105,99 @@ button:hover {
 .tab-content.active {
 
     display: block;
+}
+
+.builder-section {
+
+    margin-bottom: 40px;
+}
+
+.availability-table {
+
+    border-collapse: collapse;
+}
+
+.availability-table th,
+.availability-table td {
+
+    padding: 8px 12px;
+    text-align: center;
+}
+
+.preference-row {
+
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.preference-row label {
+
+    min-width: 220px;
+}
+
+.requirement-group {
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    padding: 20px;
+    margin-bottom: 24px;
+
+    background: white;
+
+    max-width: 900px;
+}
+
+.group-header {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 24px;
+
+    flex-wrap: wrap;
+}
+
+.course-entry {
+
+    margin-bottom: 20px;
+}
+
+.course-preferences {
+
+    margin-top: 10px;
+    margin-left: 40px;
+
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    flex-wrap: wrap;
+}
+
+.or-divider {
+
+    text-align: center;
+    font-weight: bold;
+
+    color: #666;
+
+    margin: 20px 0;
+}
+
+.add-group-button {
+
+    margin-top: 20px;
+}
+
+.generate-button {
+
+    font-size: 18px;
+    padding: 14px 24px;
 }
 
