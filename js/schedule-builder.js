@@ -131,6 +131,90 @@ function createAvailabilityTable() {
     `;
 }
 
+function createSoftPreferencesHtml() {
+
+    return `
+
+        <div
+            style="
+                margin-top:20px;
+                display:flex;
+                flex-direction:column;
+                gap:12px;
+            "
+        >
+
+            <div>
+
+                <label>
+
+                    Preferred number of days of class:
+
+                </label>
+
+                <select id="preferredDays">
+
+                    <option selected>
+                        Less
+                    </option>
+
+                    <option>
+                        More
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div>
+
+                <label>
+
+                    Preferred number of breaks:
+
+                </label>
+
+                <select id="preferredBreaks">
+
+                    <option selected>
+                        Less
+                    </option>
+
+                    <option>
+                        More
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div>
+
+                <label>
+
+                    Preferred start time:
+
+                </label>
+
+                <select id="preferredStartTime">
+
+                    <option selected>
+                        Earlier
+                    </option>
+
+                    <option>
+                        Later
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+    `;
+}
+
 function createGroupHtml(
     groupNumber
 ) {
@@ -175,6 +259,8 @@ scheduleBuilderRoot.innerHTML = `
         </h3>
 
         ${createAvailabilityTable()}
+
+        ${createSoftPreferencesHtml()}
 
     </div>
 
@@ -391,7 +477,23 @@ function buildRequest() {
             availability: {}
         },
 
-        softPreferences: {}
+        softPreferences: {
+
+            preferredDays:
+                document.getElementById(
+                    'preferredDays'
+                ).value,
+
+            preferredBreaks:
+                document.getElementById(
+                    'preferredBreaks'
+                ).value,
+
+            preferredStartTime:
+                document.getElementById(
+                    'preferredStartTime'
+                ).value
+        }
     };
 }
 
@@ -469,6 +571,4 @@ document
             }
         }
     );
-
-
 
