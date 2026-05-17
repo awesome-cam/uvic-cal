@@ -1053,7 +1053,7 @@ async function solveWithILP(
 ) {
 
     const glpkInstance =
-        solver;
+        new Solver();
 
     const groupModels =
         buildGroupModels(
@@ -1454,7 +1454,7 @@ async function solveSingleForcedSchedule(
 ) {
 
     const glpkInstance =
-        solver;
+        new Solver();
 
     const groupModels =
         buildGroupModels(
