@@ -3,6 +3,91 @@ const scheduleBuilderRoot =
         'scheduleBuilderRoot'
     );
 
+let groupCount = 1;
+
+function createCourseHtml() {
+
+    return `
+
+        <div class="course-entry">
+
+            <input
+                type="text"
+                placeholder="CHEM101"
+            />
+
+            <div class="course-preferences">
+
+                Semester:
+
+                <select>
+
+                    <option>Either</option>
+                    <option>Sept</option>
+                    <option>Jan</option>
+
+                </select>
+
+                Desire:
+
+                <select>
+
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option selected>5</option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+    `;
+}
+
+function createGroupHtml(groupNumber) {
+
+    return `
+
+        <div class="requirement-group">
+
+            <div class="group-header">
+
+                <strong>
+                    Course Group ${groupNumber}
+                </strong>
+
+                <div>
+
+                    Pick:
+
+                    <select>
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="courses-container">
+
+                ${createCourseHtml()}
+
+            </div>
+
+            <button class="add-or-course-button">
+                + Add OR Course
+            </button>
+
+        </div>
+
+    `;
+}
+
 scheduleBuilderRoot.innerHTML = `
 
     <div class="builder-section">
@@ -80,8 +165,8 @@ scheduleBuilderRoot.innerHTML = `
 
             <select>
 
-                <option>Less</option>
-                <option selected>Balanced</option>
+                <option selected>Less</option>
+                <option>Balanced</option>
                 <option>More</option>
 
             </select>
@@ -96,8 +181,8 @@ scheduleBuilderRoot.innerHTML = `
 
             <select>
 
-                <option>Less</option>
-                <option selected>Balanced</option>
+                <option selected>Less</option>
+                <option>Balanced</option>
                 <option>More</option>
 
             </select>
@@ -126,112 +211,19 @@ scheduleBuilderRoot.innerHTML = `
 
     <div class="builder-section">
 
-        <h3>Requirement Groups</h3>
+        <h3>Course Groups</h3>
 
-        <div class="requirement-group">
+        <div id="groupsContainer">
 
-            <div class="group-header">
-
-                <strong>
-                    Requirement Group 1
-                </strong>
-
-                <div>
-
-                    Pick:
-
-                    <select>
-                        <option>1</option>
-                        <option>2</option>
-                        <option>3</option>
-                    </select>
-
-                </div>
-
-            </div>
-
-            <div class="course-entry">
-
-                <input
-                    type="text"
-                    placeholder="CHEM101"
-                />
-
-                <div class="course-preferences">
-
-                    Semester:
-
-                    <select>
-
-                        <option>Either</option>
-                        <option>Sept</option>
-                        <option>Jan</option>
-
-                    </select>
-
-                    Desire:
-
-                    <select>
-
-                        <option>1</option>
-                        <option>2</option>
-                        <option>3</option>
-                        <option>4</option>
-                        <option selected>5</option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-            <div class="or-divider">
-                OR
-            </div>
-
-            <div class="course-entry">
-
-                <input
-                    type="text"
-                    placeholder="CHEM100"
-                />
-
-                <div class="course-preferences">
-
-                    Semester:
-
-                    <select>
-
-                        <option>Either</option>
-                        <option>Sept</option>
-                        <option>Jan</option>
-
-                    </select>
-
-                    Desire:
-
-                    <select>
-
-                        <option>1</option>
-                        <option>2</option>
-                        <option>3</option>
-                        <option>4</option>
-                        <option selected>5</option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-            <button>
-                + Add OR Course
-            </button>
+            ${createGroupHtml(1)}
 
         </div>
 
-        <button class="add-group-button">
-            + Add Requirement Group
+        <button
+            class="add-group-button"
+            id="addGroupButton"
+        >
+            + Add Course Group
         </button>
 
     </div>
@@ -245,4 +237,78 @@ scheduleBuilderRoot.innerHTML = `
     </div>
 
 `;
+
+document
+    .getElementById(
+        'addGroupButton'
+    )
+    .addEventListener(
+        'click',
+        () => {
+
+            groupCount++;
+
+            const container =
+                document.getElementById(
+                    'groupsContainer'
+                );
+
+            container.insertAdjacentHTML(
+                'beforeend',
+                createGroupHtml(groupCount)
+            );
+
+            attachOrCourseButtons();
+        }
+    );
+
+function attachOrCourseButtons() {
+
+    const buttons =
+        document.querySelectorAll(
+            '.add-or-course-button'
+        );
+
+    buttons.forEach(button => {
+
+        if (button.dataset.listenerAttached) {
+            return;
+        }
+
+        button.dataset.listenerAttached =
+            'true';
+
+        button.addEventListener(
+            'click',
+            () => {
+
+                const group =
+                    button.closest(
+                        '.requirement-group'
+                    );
+
+                const coursesContainer =
+                    group.querySelector(
+                        '.courses-container'
+                    );
+
+                coursesContainer.insertAdjacentHTML(
+                    'beforeend',
+
+                    `
+
+                    <div class="or-divider">
+                        OR
+                    </div>
+
+                    ${createCourseHtml()}
+
+                    `
+                );
+            }
+        );
+    });
+}
+
+attachOrCourseButtons();
 
