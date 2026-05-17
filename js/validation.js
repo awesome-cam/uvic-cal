@@ -1,298 +1,250 @@
-function semesterMatches(
-    requestedSemester,
-    actualTerm
-) {
-
-    if (
-        requestedSemester ===
-        'Either'
-    ) {
-
-        return true;
-    }
-
-    if (
-        requestedSemester ===
-        'Sept'
-    ) {
-
-        return (
-            actualTerm ===
-            '202609'
-        );
-    }
-
-    if (
-        requestedSemester ===
-        'Jan'
-    ) {
-
-        return (
-            actualTerm ===
-            '202701'
-        );
-    }
-
-    return false;
-}
-
-async function validateCourse(
-    course
-) {
-
-    const errors = [];
-
-    const code =
-        course.code
-            .trim()
-            .toUpperCase();
-
-    if (!code) {
-
-        return errors;
-    }
-
-    const parsed =
-        parseCourseCode(
-            code
-        );
-
-    if (!parsed) {
-
-        errors.push(
-
-            `${code} is not a valid course format`
-        );
-
-        return errors;
-    }
-
-    const matches =
-        await getCourseMatches(
-            code
-        );
-
-    if (
-        matches.length === 0
-    ) {
-
-        errors.push(
-            `${code} was not found`
-        );
-
-        return errors;
-    }
-
-    const matchingSemester =
-        matches.some(
-            section =>
-
-                semesterMatches(
-                    course.semester,
-                    section.term
-                )
-        );
-
-    if (
-        !matchingSemester
-    ) {
-
-        errors.push(
-
-            `${code} is not available in ${course.semester}`
-        );
-    }
-
-    if (
-        Number.isNaN(
-            course.priority
-        )
-    ) {
-
-        errors.push(
-
-            `${code} has an invalid priority`
-        );
-    }
-
-    return errors;
-}
-
-function validateGroups(
-    groups
-) {
-
-    const errors = [];
-
-    if (
-        !Array.isArray(
-            groups
-        )
-    ) {
-
-        errors.push(
-            'Groups must be an array'
-        );
-
-        return errors;
-    }
-
-    groups.forEach(
-
-        (
-            group,
-            index
-        ) => {
-
-            if (
-                !Array.isArray(
-                    group.courses
-                )
-            ) {
-
-                errors.push(
-
-                    `Group ${index + 1} is missing courses`
-                );
-
-                return;
-            }
-
-            if (
-                group.courses.length === 0
-            ) {
-
-                errors.push(
-
-                    `Group ${index + 1} has no courses`
-                );
-            }
-
-            if (
-                group.pick <
-                1
-            ) {
-
-                errors.push(
-
-                    `Group ${index + 1} must pick at least 1 course`
-                );
-            }
-
-            if (
-                group.pick >
-                group.courses.length
-            ) {
-
-                errors.push(
-
-                    `Group ${index + 1} cannot pick more courses than exist`
-                );
-            }
-        }
-    );
-
-    return errors;
-}
-
-function validateAvailability(
-    availability
-) {
-
-    const errors = [];
-
-    if (!availability) {
-
-        errors.push(
-            'Availability settings are missing'
-        );
-
-        return errors;
-    }
-
-    return errors;
-}
-
-function validatePreferences(
-    preferences
-) {
-
-    const errors = [];
-
-    if (!preferences) {
-
-        errors.push(
-            'Preferences are missing'
-        );
-
-        return errors;
-    }
-
-    return errors;
-}
-
 async function validateRequest(
     request
 ) {
 
     const errors = [];
 
-    if (!request) {
+    /*
+        Validate groups exist
+    */
+
+    if (
+        !request.groups ||
+        request.groups.length === 0
+    ) {
+
+        errors.push(
+            'At least one course group is required.'
+        );
 
         return {
 
             valid: false,
-
-            errors: [
-                'Request is missing'
-            ]
+            errors
         };
     }
 
-    errors.push(
+    /*
+        Track duplicates globally
+    */
 
-        ...validateGroups(
-            request.groups
-        )
-    );
-
-    errors.push(
-
-        ...validateAvailability(
-
-            request
-                .hardConstraints
-                ?.availability
-        )
-    );
-
-    errors.push(
-
-        ...validatePreferences(
-
-            request
-                .softPreferences
-        )
-    );
+    const seenCourses =
+        new Set();
 
     for (
-        const group of
-        request.groups || []
+        let groupIndex = 0;
+        groupIndex < request.groups.length;
+        groupIndex++
     ) {
+
+        const group =
+            request.groups[groupIndex];
+
+        /*
+            Validate group size
+        */
+
+        if (
+            !group.courses ||
+            group.courses.length === 0
+        ) {
+
+            errors.push(
+
+                `Course Group ${groupIndex + 1} ` +
+
+                `contains no courses.`
+            );
+
+            continue;
+        }
+
+        /*
+            Validate pick count
+        */
+
+        if (
+            group.pick < 1
+        ) {
+
+            errors.push(
+
+                `Course Group ${groupIndex + 1} ` +
+
+                `must choose at least 1 course.`
+            );
+        }
+
+        if (
+            group.pick >
+            group.courses.length
+        ) {
+
+            errors.push(
+
+                `Course Group ${groupIndex + 1} ` +
+
+                `cannot choose ${group.pick} ` +
+
+                `courses from only ` +
+
+                `${group.courses.length} options.`
+            );
+        }
 
         for (
             const course of
-            group.courses || []
+            group.courses
         ) {
 
-            const courseErrors =
-                await validateCourse(
-                    course
+            /*
+                Validate code exists
+            */
+
+            if (
+                !course.code
+            ) {
+
+                errors.push(
+
+                    `Empty course code ` +
+
+                    `in Course Group ` +
+
+                    `${groupIndex + 1}.`
                 );
 
-            errors.push(
-                ...courseErrors
+                continue;
+            }
+
+            /*
+                Duplicate detection
+            */
+
+            if (
+                seenCourses.has(
+                    course.code
+                )
+            ) {
+
+                errors.push(
+
+                    `${course.code} ` +
+
+                    `appears more than once.`
+                );
+            }
+
+            seenCourses.add(
+                course.code
             );
+
+            /*
+                Validate course exists
+            */
+
+            const matches =
+                await getCourseMatches(
+                    course.code
+                );
+
+            if (
+                matches.length === 0
+            ) {
+
+                errors.push(
+
+                    `${course.code} ` +
+
+                    `does not exist.`
+                );
+
+                continue;
+            }
+
+            /*
+                Validate semester restriction
+            */
+
+            if (
+                course.semester ===
+                'Sept'
+            ) {
+
+                const hasSept =
+                    matches.some(
+                        section =>
+
+                            section.term ===
+                            '202609'
+                    );
+
+                if (!hasSept) {
+
+                    errors.push(
+
+                        `${course.code} ` +
+
+                        `does not exist ` +
+
+                        `in Sept semester.`
+                    );
+                }
+            }
+
+            if (
+                course.semester ===
+                'Jan'
+            ) {
+
+                const hasJan =
+                    matches.some(
+                        section =>
+
+                            section.term ===
+                            '202701'
+                    );
+
+                if (!hasJan) {
+
+                    errors.push(
+
+                        `${course.code} ` +
+
+                        `does not exist ` +
+
+                        `in Jan semester.`
+                    );
+                }
+            }
+
+            /*
+                Validate priority
+            */
+
+            if (
+
+                typeof course.priority !==
+                'number'
+
+                ||
+
+                course.priority < 1
+
+                ||
+
+                course.priority > 5
+            ) {
+
+                errors.push(
+
+                    `${course.code} ` +
+
+                    `priority must be ` +
+
+                    `between 1 and 5.`
+                );
+            }
         }
     }
 
