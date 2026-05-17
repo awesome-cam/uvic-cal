@@ -586,3 +586,5 @@ async function validateCourses() {
 
 render();
 
+
+
