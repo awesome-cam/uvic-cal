@@ -27,6 +27,14 @@ function sectionsConflict(
     sectionB
 ) {
 
+    if (
+        sectionA.term !==
+        sectionB.term
+    ) {
+
+        return false;
+    }
+
     for (
         const meetingA of
         sectionA.meetings
