@@ -301,6 +301,19 @@ function buildCourseBundles(
         normalized
     ) {
 
+        /*
+            Ignore weird Banner
+            component types for now.
+        */
+
+        if (
+            section.componentType ===
+            'other'
+        ) {
+
+            continue;
+        }
+
         const key =
 
             section.course +
@@ -313,8 +326,7 @@ function buildCourseBundles(
 
                 lectures: [],
                 labs: [],
-                tutorials: [],
-                others: []
+                tutorials: []
             };
         }
 
@@ -343,12 +355,6 @@ function buildCourseBundles(
 
             grouped[key]
                 .tutorials
-                .push(section);
-        }
-        else {
-
-            grouped[key]
-                .others
                 .push(section);
         }
     }
@@ -396,9 +402,7 @@ function buildCourseBundles(
 
                         lecture,
                         lab,
-                        tutorial,
-
-                        ...group.others
+                        tutorial
                     ]
 
                     .filter(Boolean);
@@ -420,13 +424,11 @@ function buildCourseBundles(
                         continue;
                     }
 
-                    const bundle =
+                    bundles.push(
+
                         buildBundle(
                             sections
-                        );
-
-                    bundles.push(
-                        bundle
+                        )
                     );
                 }
             }
