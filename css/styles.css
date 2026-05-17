@@ -245,3 +245,25 @@ button:hover {
     padding: 14px 24px;
 }
 
+.schedule-card {
+
+    border: 1px solid #ccc;
+
+    border-radius: 8px;
+
+    padding: 16px;
+
+    margin-top: 20px;
+
+    background: #fafafa;
+}
+
+.rendered-section {
+
+    margin-left: 20px;
+
+    margin-top: 16px;
+
+    line-height: 1.6;
+}
+
