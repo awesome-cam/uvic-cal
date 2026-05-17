@@ -28,7 +28,7 @@ function createCourseHtml() {
 
                 </select>
 
-                Desire:
+               Priority (5 = highest): 
 
                 <select>
 
@@ -212,6 +212,18 @@ scheduleBuilderRoot.innerHTML = `
     <div class="builder-section">
 
         <h3>Course Groups</h3>
+        <p class="course-group-help">
+
+            For most simple usage,
+            just pick 1 course per
+            course group.
+
+            Course groups allow
+            you to add OR logic
+            for more complicated
+            requests.
+
+        </p>
 
         <div id="groupsContainer">
 
