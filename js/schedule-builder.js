@@ -5,6 +5,22 @@ const scheduleBuilderRoot =
 
 let groupCount = 1;
 
+const DAYS = [
+    'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat'
+];
+
+const TIME_BLOCKS = [
+    'Morning',
+    'Afternoon',
+    'Evening'
+];
+
 function createCourseHtml() {
 
     return `
@@ -18,27 +34,35 @@ function createCourseHtml() {
 
             <div class="course-preferences">
 
-                Semester:
+                <div>
 
-                <select>
+                    Semester:
 
-                    <option>Either</option>
-                    <option>Sept</option>
-                    <option>Jan</option>
+                    <select class="semester-select">
 
-                </select>
+                        <option>Either</option>
+                        <option>Sept</option>
+                        <option>Jan</option>
 
-               Priority (5 = highest): 
+                    </select>
 
-                <select>
+                </div>
 
-                    <option>1</option>
-                    <option>2</option>
-                    <option>3</option>
-                    <option>4</option>
-                    <option selected>5</option>
+                <div>
 
-                </select>
+                    Priority (5 = highest):
+
+                    <select class="priority-select">
+
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option selected>5</option>
+
+                    </select>
+
+                </div>
 
             </div>
 
@@ -47,7 +71,69 @@ function createCourseHtml() {
     `;
 }
 
-function createGroupHtml(groupNumber) {
+function createAvailabilityTable() {
+
+    const headerCells =
+        DAYS.map(day => `
+            <th>${day}</th>
+        `).join('');
+
+    const rows =
+        TIME_BLOCKS.map(timeBlock => {
+
+            const cells =
+                DAYS.map(day => `
+
+                    <td>
+
+                        <input
+                            type="checkbox"
+                            checked
+                            data-day="${day}"
+                            data-time-block="${timeBlock}"
+                        />
+
+                    </td>
+
+                `).join('');
+
+            return `
+
+                <tr>
+
+                    <td>
+                        ${timeBlock}
+                    </td>
+
+                    ${cells}
+
+                </tr>
+
+            `;
+        }).join('');
+
+    return `
+
+        <table class="availability-table">
+
+            <tr>
+
+                <th></th>
+
+                ${headerCells}
+
+            </tr>
+
+            ${rows}
+
+        </table>
+
+    `;
+}
+
+function createGroupHtml(
+    groupNumber
+) {
 
     return `
 
@@ -56,17 +142,21 @@ function createGroupHtml(groupNumber) {
             <div class="group-header">
 
                 <strong>
+
                     Course Group ${groupNumber}
+
                 </strong>
 
                 <div>
 
                     Pick:
 
-                    <select>
-                        <option>1</option>
+                    <select class="pick-count-select">
+
+                        <option selected>1</option>
                         <option>2</option>
                         <option>3</option>
+
                     </select>
 
                 </div>
@@ -80,7 +170,9 @@ function createGroupHtml(groupNumber) {
             </div>
 
             <button class="add-or-course-button">
+
                 + Add OR Course
+
             </button>
 
         </div>
@@ -92,70 +184,19 @@ scheduleBuilderRoot.innerHTML = `
 
     <div class="builder-section">
 
-        <h3>Days Available</h3>
+        <h3>
+            Days Available
+        </h3>
 
-        <table class="availability-table">
-
-            <tr>
-                <th></th>
-                <th>Sun</th>
-                <th>Mon</th>
-                <th>Tue</th>
-                <th>Wed</th>
-                <th>Thu</th>
-                <th>Fri</th>
-                <th>Sat</th>
-            </tr>
-
-            <tr>
-
-                <td>Morning</td>
-
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-
-            </tr>
-
-            <tr>
-
-                <td>Afternoon</td>
-
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-
-            </tr>
-
-            <tr>
-
-                <td>Evening</td>
-
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-                <td><input type="checkbox" checked /></td>
-
-            </tr>
-
-        </table>
+        ${createAvailabilityTable()}
 
     </div>
 
     <div class="builder-section">
 
-        <h3>General Preferences</h3>
+        <h3>
+            General Preferences
+        </h3>
 
         <div class="preference-row">
 
@@ -163,11 +204,19 @@ scheduleBuilderRoot.innerHTML = `
                 Number of days:
             </label>
 
-            <select>
+            <select id="daysPreference">
 
-                <option selected>Less</option>
-                <option>Balanced</option>
-                <option>More</option>
+                <option selected>
+                    Less
+                </option>
+
+                <option>
+                    Balanced
+                </option>
+
+                <option>
+                    More
+                </option>
 
             </select>
 
@@ -179,11 +228,19 @@ scheduleBuilderRoot.innerHTML = `
                 Breaks during the day:
             </label>
 
-            <select>
+            <select id="breaksPreference">
 
-                <option selected>Less</option>
-                <option>Balanced</option>
-                <option>More</option>
+                <option selected>
+                    Less
+                </option>
+
+                <option>
+                    Balanced
+                </option>
+
+                <option>
+                    More
+                </option>
 
             </select>
 
@@ -195,13 +252,27 @@ scheduleBuilderRoot.innerHTML = `
                 Face-to-face lectures:
             </label>
 
-            <select>
+            <select id="deliveryPreference">
 
-                <option>All</option>
-                <option>Most</option>
-                <option>Some</option>
-                <option>Less</option>
-                <option>None</option>
+                <option>
+                    All
+                </option>
+
+                <option>
+                    Most
+                </option>
+
+                <option>
+                    Some
+                </option>
+
+                <option>
+                    Less
+                </option>
+
+                <option>
+                    None
+                </option>
 
             </select>
 
@@ -211,7 +282,10 @@ scheduleBuilderRoot.innerHTML = `
 
     <div class="builder-section">
 
-        <h3>Course Groups</h3>
+        <h3>
+            Course Groups
+        </h3>
+
         <p class="course-group-help">
 
             For most simple usage,
@@ -219,9 +293,8 @@ scheduleBuilderRoot.innerHTML = `
             course group.
 
             Course groups allow
-            you to add OR logic
-            for more complicated
-            requests.
+            OR logic for more
+            complicated requests.
 
         </p>
 
@@ -235,19 +308,22 @@ scheduleBuilderRoot.innerHTML = `
             class="add-group-button"
             id="addGroupButton"
         >
+
             + Add Course Group
+
         </button>
 
     </div>
 
     <div class="builder-section">
 
-
         <button
             class="generate-button"
             id="generateButton"
         >
+
             Generate Schedules
+
         </button>
 
         <div
@@ -276,7 +352,10 @@ document
 
             container.insertAdjacentHTML(
                 'beforeend',
-                createGroupHtml(groupCount)
+
+                createGroupHtml(
+                    groupCount
+                )
             );
 
             attachOrCourseButtons();
@@ -292,11 +371,16 @@ function attachOrCourseButtons() {
 
     buttons.forEach(button => {
 
-        if (button.dataset.listenerAttached) {
+        if (
+            button.dataset
+                .listenerAttached
+        ) {
+
             return;
         }
 
-        button.dataset.listenerAttached =
+        button.dataset
+            .listenerAttached =
             'true';
 
         button.addEventListener(
@@ -319,7 +403,9 @@ function attachOrCourseButtons() {
                     `
 
                     <div class="or-divider">
+
                         OR
+
                     </div>
 
                     ${createCourseHtml()}
@@ -331,7 +417,62 @@ function attachOrCourseButtons() {
     });
 }
 
-function buildRequest() {
+function buildAvailability() {
+
+    const availability = {};
+
+    const checkboxes =
+        document.querySelectorAll(
+            '.availability-table input[type="checkbox"]'
+        );
+
+    checkboxes.forEach(
+        checkbox => {
+
+            const day =
+                checkbox.dataset.day;
+
+            const timeBlock =
+                checkbox.dataset
+                    .timeBlock;
+
+            if (
+                !availability[day]
+            ) {
+
+                availability[day] = {};
+            }
+
+            availability[day][timeBlock] =
+                checkbox.checked;
+        }
+    );
+
+    return availability;
+}
+
+function buildPreferences() {
+
+    return {
+
+        numberOfDays:
+            document.getElementById(
+                'daysPreference'
+            ).value,
+
+        breaks:
+            document.getElementById(
+                'breaksPreference'
+            ).value,
+
+        delivery:
+            document.getElementById(
+                'deliveryPreference'
+            ).value
+    };
+}
+
+function buildGroups() {
 
     const groups = [];
 
@@ -340,58 +481,98 @@ function buildRequest() {
             '.requirement-group'
         );
 
-    groupElements.forEach(groupEl => {
+    groupElements.forEach(
+        groupEl => {
 
-        const group = {
+            const pick =
+                parseInt(
 
-            pick: 1,
-            courses: []
-        };
+                    groupEl
+                        .querySelector(
+                            '.pick-count-select'
+                        )
+                        .value
+                );
 
-        const courseEntries =
-            groupEl.querySelectorAll(
-                '.course-entry'
+            const group = {
+
+                pick,
+
+                courses: []
+            };
+
+            const courseEntries =
+                groupEl.querySelectorAll(
+                    '.course-entry'
+                );
+
+            courseEntries.forEach(
+                entry => {
+
+                    const code =
+                        entry
+                            .querySelector(
+                                'input'
+                            )
+                            .value
+
+                            .trim()
+                            .toUpperCase();
+
+                    if (!code) {
+                        return;
+                    }
+
+                    const semester =
+                        entry
+                            .querySelector(
+                                '.semester-select'
+                            )
+                            .value;
+
+                    const priority =
+                        parseInt(
+
+                            entry
+                                .querySelector(
+                                    '.priority-select'
+                                )
+                                .value
+                        );
+
+                    group.courses.push({
+
+                        code,
+
+                        semester,
+
+                        priority
+                    });
+                }
             );
 
-        courseEntries.forEach(entry => {
+            groups.push(group);
+        }
+    );
 
-            const code =
-                entry.querySelector(
-                    'input'
-                ).value;
+    return groups;
+}
 
-            const selects =
-                entry.querySelectorAll(
-                    'select'
-                );
-
-            const semester =
-                selects[0].value;
-
-            const desire =
-                parseInt(
-                    selects[1].value
-                );
-            if (
-                code.trim() !== ''
-            ) {
-
-                group.courses.push({
-
-                    code,
-                    semester,
-                    desire
-                });
-            }
-
-        });
-
-        groups.push(group);
-    });
+function buildRequest() {
 
     return {
 
-        groups
+        groups:
+            buildGroups(),
+
+        hardConstraints: {
+
+            availability:
+                buildAvailability()
+        },
+
+        softPreferences:
+            buildPreferences()
     };
 }
 
@@ -401,19 +582,25 @@ document
     .getElementById(
         'generateButton'
     )
+
     .addEventListener(
         'click',
+
         async () => {
 
             const output =
                 document.getElementById(
-                'validationOutput'
-            );
+                    'validationOutput'
+                );
 
             output.innerHTML = `
+
                 <div>
+
                     Generating schedules...
+
                 </div>
+
             `;
 
             const request =
@@ -424,8 +611,10 @@ document
                     request
                 );
 
+            if (
+                result.valid
+            ) {
 
-            if (result.valid) {
                 const schedules =
                     await generateSchedules(
                         request

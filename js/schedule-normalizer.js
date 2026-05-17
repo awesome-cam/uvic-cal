@@ -40,10 +40,10 @@ function normalizeMeeting(
             meetingTime.endTime
         );
 
-    const addMeeting = (
+    function addMeeting(
         enabled,
         day
-    ) => {
+    ) {
 
         if (!enabled) {
             return;
@@ -56,7 +56,7 @@ function normalizeMeeting(
             startMinutes,
             endMinutes
         });
-    };
+    }
 
     addMeeting(
         meetingTime.monday,
@@ -127,8 +127,9 @@ function normalizeSection(
             rawSection
                 .scheduleTypeDescription || ''
         )
-            .trim()
-            .toLowerCase();
+
+        .trim()
+        .toLowerCase();
 
     let componentType =
         'other';
@@ -210,6 +211,79 @@ function normalizeSections(
     );
 }
 
+function sectionsInternallyConflict(
+    sections
+) {
+
+    for (
+        let i = 0;
+        i < sections.length;
+        i++
+    ) {
+
+        for (
+            let j = i + 1;
+            j < sections.length;
+            j++
+        ) {
+
+            if (
+
+                sectionsConflict(
+                    sections[i],
+                    sections[j]
+                )
+            ) {
+
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function buildBundle(
+    sections
+) {
+
+    const meetings =
+        sections.flatMap(
+            section =>
+                section.meetings
+        );
+
+    const crns =
+        sections.map(
+            section =>
+                section.crn
+        );
+
+    return {
+
+        bundleId:
+            crns.join('-'),
+
+        course:
+            sections[0]
+                .course,
+
+        term:
+            sections[0]
+                .term,
+
+        title:
+            sections[0]
+                .title,
+
+        sections,
+
+        meetings,
+
+        crns
+    };
+}
+
 function buildCourseBundles(
     rawSections
 ) {
@@ -282,10 +356,8 @@ function buildCourseBundles(
     const bundles = [];
 
     for (
-        const [
-            key,
-            group
-        ] of Object.entries(
+        const group of
+        Object.values(
             grouped
         )
     ) {
@@ -331,46 +403,52 @@ function buildCourseBundles(
 
                     .filter(Boolean);
 
-                    const meetings =
-                        sections.flatMap(
-                            section =>
-                                section.meetings
+                    if (
+                        sections.length === 0
+                    ) {
+
+                        continue;
+                    }
+
+                    if (
+
+                        sectionsInternallyConflict(
+                            sections
+                        )
+                    ) {
+
+                        continue;
+                    }
+
+                    const bundle =
+                        buildBundle(
+                            sections
                         );
 
-                    const crns =
-                        sections.map(
-                            section =>
-                                section.crn
-                        );
-
-                    bundles.push({
-
-                        bundleId:
-                            crns.join('-'),
-
-                        course:
-                            sections[0]
-                                .course,
-
-                        term:
-                            sections[0]
-                                .term,
-
-                        title:
-                            sections[0]
-                                .title,
-
-                        sections,
-
-                        meetings,
-
-                        crns
-                    });
+                    bundles.push(
+                        bundle
+                    );
                 }
             }
         }
     }
 
-    return bundles;
+    const deduped =
+        new Map();
+
+    for (
+        const bundle of
+        bundles
+    ) {
+
+        deduped.set(
+            bundle.bundleId,
+            bundle
+        );
+    }
+
+    return [
+        ...deduped.values()
+    ];
 }
 
