@@ -678,62 +678,6 @@ function renderCrnSummary(
     `;
 }
 
-function renderScoreSummary(
-    schedule
-) {
-
-    const scores =
-        schedule.scores || {};
-
-    return `
-
-        <div
-            style="
-                margin-bottom:20px;
-                padding:12px;
-                border:1px solid #ddd;
-                border-radius:8px;
-                background:#fafafa;
-                max-width:700px;
-            "
-        >
-
-            <div>
-
-                <strong>
-                    Overall Score:
-                </strong>
-
-                ${scores.total ?? '?'}
-
-            </div>
-
-            <div style="margin-top:8px;">
-
-                Course Match:
-                ${scores.course ?? '?'}
-
-                |
-
-                Semester Balance:
-                ${scores.balance ?? '?'}
-
-                |
-
-                Compactness:
-                ${scores.compact ?? '?'}
-
-                |
-
-                Smoothness:
-                ${scores.breaks ?? '?'}
-
-            </div>
-
-        </div>
-
-    `;
-}
 
 function renderSchedule(
     schedule,
@@ -835,9 +779,6 @@ function renderSchedule(
 
             </div>
 
-            ${renderScoreSummary(
-                schedule
-            )}
 
             ${termCalendars}
 
