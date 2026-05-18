@@ -250,6 +250,7 @@ def create_model(
     model = cp_model.CpModel()
 
     bundle_vars = {}
+    objective_terms = []
 
     #
     # Filter bundles by
@@ -314,6 +315,7 @@ def create_model(
                 f'bundle_{bundle_id}'
             )
 
+
             bundle_vars[
                 bundle_id
             ] = {
@@ -324,6 +326,51 @@ def create_model(
 
                 'group_index': group_index
             }
+
+            #
+            # Optimization:
+            # prioritize higher
+            # priority courses
+            #
+
+            bundle_priority = 1
+
+            for course in request_groups[
+                group_index
+            ][
+                'courses'
+            ]:
+
+                code = (
+                    course['code']
+                )
+
+                if any(
+
+                    section[
+                        'subject'
+                    ] +
+                    section[
+                        'courseNumber'
+                    ]
+
+                    == code
+
+                    for section in
+                    bundle['sections']
+                ):
+
+                    bundle_priority = max(
+
+                        bundle_priority,
+
+                        course['priority']
+                    )
+
+            objective_terms.append(
+                bundle_priority * var
+            )
+
 
     #
     # Pick-X constraints
@@ -424,6 +471,83 @@ def create_model(
                 )
 
     #
+    # Optimization:
+    # semester balancing
+    #
+
+    fall_count = model.NewIntVar(
+        0,
+        20,
+        'fall_count'
+    )
+
+    spring_count = model.NewIntVar(
+        0,
+        20,
+        'spring_count'
+    )
+
+    difference = model.NewIntVar(
+        0,
+        20,
+        'difference'
+    )
+
+    fall_vars = []
+    spring_vars = []
+
+    for info in bundle_vars.values():
+
+        bundle = info['bundle']
+
+        if (
+            bundle['term']
+            ==
+            '202609'
+        ):
+
+            fall_vars.append(
+                info['var']
+            )
+
+        elif (
+            bundle['term']
+            ==
+            '202701'
+        ):
+
+            spring_vars.append(
+                info['var']
+            )
+
+    model.Add(
+        fall_count ==
+        sum(fall_vars)
+    )
+
+    model.Add(
+        spring_count ==
+        sum(spring_vars)
+    )
+
+    model.AddAbsEquality(
+        difference,
+
+        fall_count -
+        spring_count
+    )
+
+    #
+    # Strongly penalize
+    # imbalance
+    #
+
+    objective_terms.append(
+        -100 * difference
+    )
+
+
+    #
     # Optional lecture anchor
     #
 
@@ -465,6 +589,10 @@ def create_model(
                 model.Add(
                     info['var'] == 0
                 )
+
+    model.Maximize(
+        sum(objective_terms)
+    )
 
     return model, bundle_vars
 
@@ -947,110 +1075,6 @@ def solve(
 
 
 
-        #
-    # Compute best achievable
-    # semester balance
-    #
-
-    total_requested_courses = sum(
-
-        group['pick']
-
-        for group in request_groups
-    )
-
-    forced_fall = 0
-    forced_spring = 0
-
-    for course_bundles in all_course_bundles:
-
-        available_terms = set(
-
-            bundle['term']
-
-            for bundle in course_bundles
-        )
-
-        if (
-            len(available_terms)
-            == 1
-        ):
-
-            only_term = list(
-                available_terms
-            )[0]
-
-            if only_term == '202609':
-
-                forced_fall += 1
-
-            elif only_term == '202701':
-
-                forced_spring += 1
-
-    remaining_courses = (
-
-        total_requested_courses
-
-        -
-
-        forced_fall
-
-        -
-
-        forced_spring
-    )
-
-    best_possible_difference = None
-
-    for extra_fall in range(
-        remaining_courses + 1
-    ):
-
-        extra_spring = (
-
-            remaining_courses
-            -
-            extra_fall
-        )
-
-        final_fall = (
-            forced_fall +
-            extra_fall
-        )
-
-        final_spring = (
-            forced_spring +
-            extra_spring
-        )
-
-        difference = abs(
-            final_fall -
-            final_spring
-        )
-
-        if (
-
-            best_possible_difference
-            is None
-
-            or
-
-            difference <
-            best_possible_difference
-        ):
-
-            best_possible_difference = (
-                difference
-            )
-
-    #
-    # Hard-filter bundles that
-    # would violate best balance
-    #
-
-    balanced_schedules_only = []
-
     anchor_candidates = []
 
     for group_index, course_bundles in enumerate(
@@ -1144,11 +1168,12 @@ def solve(
             model
         )
 
-        if (
-            status
-            !=
-            cp_model.OPTIMAL
-        ):
+        if status not in [
+
+            cp_model.OPTIMAL,
+
+            cp_model.FEASIBLE
+        ]:
 
             continue
 
@@ -1157,60 +1182,7 @@ def solve(
             bundle_vars
         )
 
-                #
-        # Enforce best-achievable
-        # semester balance
-        #
-
-        fall_count = 0
-        spring_count = 0
-
-        for bundle in schedule['bundles']:
-
-            if (
-                bundle['term']
-                ==
-                '202609'
-            ):
-
-                fall_count += 1
-
-            elif (
-                bundle['term']
-                ==
-                '202701'
-            ):
-
-                spring_count += 1
-
-        difference = abs(
-            fall_count -
-            spring_count
-        )
-
-
-        total_courses = (
-            fall_count +
-            spring_count
-        )
-
-        perfectly_balanced = (
-            total_courses % 2 == 0
-        )
-
-        if perfectly_balanced:
-
-            if difference != 0:
-
-                continue
-
-        else:
-
-            if difference > 1:
-
-                continue
-
-
+                
 
         signature = '-'.join(
 
