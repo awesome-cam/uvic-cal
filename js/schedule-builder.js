@@ -296,85 +296,6 @@ function createSoftPreferencesHtml() {
 
             </div>
 
-            <div>
-
-                <label>
-
-                    Schedule Personality:
-
-                </label>
-
-                <div style="margin-top:8px;">
-
-                    <select
-                        id="schedulePersonality"
-                        style="
-                            width:700px;
-                            max-width:100%;
-                            padding:8px;
-                        "
-                    >
-
-                        <option value="balanced" selected>
-
-                            Balanced —
-                            Good overall schedules
-                            with decent compactness
-                            and strong course choices
-
-                        </option>
-
-                        <option value="course-first">
-
-                            Course-First —
-                            Maximizes preferred
-                            courses even if the
-                            schedule shape is worse
-
-                        </option>
-
-                        <option value="compact">
-
-                            Compact —
-                            Strongly prefers fewer
-                            campus days while still
-                            keeping reasonable flow
-
-                        </option>
-
-                        <option value="relaxed">
-
-                            Relaxed —
-                            Prefers smoother days
-                            with fewer exhausting
-                            idle gaps
-
-                        </option>
-
-                        <option value="ultra-compact">
-
-                            Ultra-Compact —
-                            Aggressively minimizes
-                            days on campus;
-                            ideal for commuters
-
-                        </option>
-
-                        <option value="low-stress">
-
-                            Low-Stress —
-                            Prioritizes comfortable
-                            pacing and avoids long
-                            dead periods
-
-                        </option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
         </div>
 
     `;
@@ -838,14 +759,6 @@ function buildRequest() {
                 document.getElementById(
                     'deliveryMode'
                 ).value
-        },
-
-        softPreferences: {
-
-            personality:
-                document.getElementById(
-                    'schedulePersonality'
-                ).value
         }
     };
 }
@@ -931,4 +844,5 @@ document
             }
         }
     );
+
 

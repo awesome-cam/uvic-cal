@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ortools.sat.python import cp_model
+import random
 
 MAX_SCHEDULES = 50
 
@@ -626,365 +627,11 @@ def extract_solution(
 # SCORING
 #
 
-def calculate_course_score(
-    schedule,
-    request_groups
-):
 
-    score = 0
-    max_score = 0
 
-    for group in request_groups:
 
-        max_priority = max(
-            course['priority']
-            for course in group['courses']
-        )
 
-        max_score += (
-            max_priority *
-            group['pick']
-        )
 
-    for bundle in schedule['bundles']:
-
-        matched_priority = 0
-
-        for group in request_groups:
-
-            for course in group['courses']:
-
-                code = (
-                    course['code']
-                )
-
-                if any(
-
-                    section[
-                        'subject'
-                    ] +
-                    section[
-                        'courseNumber'
-                    ]
-
-                    == code
-
-                    for section in
-                    bundle['sections']
-                ):
-
-                    matched_priority = max(
-
-                        matched_priority,
-
-                        course['priority']
-                    )
-
-        score += matched_priority
-
-    if max_score == 0:
-        return 0
-
-    return score / max_score
-
-def calculate_compact_score(
-    schedule
-):
-
-    active_days = set()
-
-    for bundle in schedule['bundles']:
-
-        for meeting in bundle['meetings']:
-
-            active_days.add(
-                (
-                    bundle['term'],
-                    meeting['day']
-                )
-            )
-
-    day_count = len(active_days)
-
-    if day_count <= 2:
-        return 1.0
-
-    if day_count == 3:
-        return 0.8
-
-    if day_count == 4:
-        return 0.45
-
-    if day_count == 5:
-        return 0.2
-
-    return 0.0
-
-def calculate_break_score(
-    schedule
-):
-
-    meetings_by_day = {}
-
-    for bundle in schedule['bundles']:
-
-        for meeting in bundle['meetings']:
-
-            key = (
-                bundle['term'],
-                meeting['day']
-            )
-
-            if key not in meetings_by_day:
-
-                meetings_by_day[
-                    key
-                ] = []
-
-            meetings_by_day[
-                key
-            ].append(
-                meeting
-            )
-
-    total_gap_minutes = 0
-
-    for meetings in meetings_by_day.values():
-
-        meetings.sort(
-            key=lambda m:
-                m['startMinutes']
-        )
-
-        for i in range(
-            len(meetings) - 1
-        ):
-
-            gap = (
-
-                meetings[i + 1][
-                    'startMinutes'
-                ]
-
-                -
-
-                meetings[i][
-                    'endMinutes'
-                ]
-            )
-
-            if gap > 0:
-
-                total_gap_minutes += gap
-
-    max_reasonable_gap = 600
-
-    normalized = min(
-        total_gap_minutes /
-        max_reasonable_gap,
-        1.0
-    )
-
-    return 1.0 - normalized
-
-def calculate_semester_balance_score(
-    schedule
-):
-
-    fall_count = 0
-    spring_count = 0
-
-    for bundle in schedule['bundles']:
-
-        if (
-            bundle['term']
-            ==
-            '202609'
-        ):
-
-            fall_count += 1
-
-        elif (
-            bundle['term']
-            ==
-            '202701'
-        ):
-
-            spring_count += 1
-
-    difference = abs(
-        fall_count -
-        spring_count
-    )
-
-    if difference <= 1:
-        return 1.0
-
-    if difference == 2:
-        return 0.3
-
-    return 0.0
-
-def get_personality_weights(
-    personality
-):
-
-    personalities = {
-
-        'balanced': {
-
-            'course': 0.35,
-            'balance': 0.35,
-            'compact': 0.20,
-            'breaks': 0.10
-        },
-
-        'course-first': {
-
-            'course': 0.55,
-            'balance': 0.25,
-            'compact': 0.10,
-            'breaks': 0.10
-        },
-
-        'compact': {
-
-            'course': 0.15,
-            'balance': 0.35,
-            'compact': 0.40,
-            'breaks': 0.10
-        },
-
-        'relaxed': {
-
-            'course': 0.15,
-            'balance': 0.35,
-            'compact': 0.10,
-            'breaks': 0.40
-        },
-
-        'ultra-compact': {
-
-            'course': 0.10,
-            'balance': 0.30,
-            'compact': 0.50,
-            'breaks': 0.10
-        },
-
-        'low-stress': {
-
-            'course': 0.15,
-            'balance': 0.35,
-            'compact': 0.05,
-            'breaks': 0.45
-        }
-    }
-
-    return personalities.get(
-
-        personality,
-
-        personalities['balanced']
-    )
-
-def score_schedule(
-    schedule,
-    request
-):
-
-    personality = (
-        request[
-            'softPreferences'
-        ][
-            'personality'
-        ]
-    )
-
-    weights = (
-        get_personality_weights(
-            personality
-        )
-    )
-
-    course_score = (
-        calculate_course_score(
-            schedule,
-            request['groups']
-        )
-    )
-
-    compact_score = (
-        calculate_compact_score(
-            schedule
-        )
-    )
-
-    break_score = (
-        calculate_break_score(
-            schedule
-        )
-    )
-
-    balance_score = (
-        calculate_semester_balance_score(
-            schedule
-        )
-    )
-
-    total_score = (
-
-        course_score
-        *
-        weights['course']
-
-        +
-
-        balance_score
-        *
-        weights['balance']
-
-        +
-
-        compact_score
-        *
-        weights['compact']
-
-        +
-
-        break_score
-        *
-        weights['breaks']
-    )
-
-    schedule['scores'] = {
-
-        'total': round(
-            total_score,
-            3
-        ),
-
-        'course': round(
-            course_score,
-            3
-        ),
-
-        'balance': round(
-            balance_score,
-            3
-        ),
-
-        'compact': round(
-            compact_score,
-            3
-        ),
-
-        'breaks': round(
-            break_score,
-            3
-        )
-    }
-
-    return total_score
 
 @app.post("/solve")
 def solve(
@@ -1162,6 +809,11 @@ def solve(
 
         solver = cp_model.CpSolver()
 
+        solver.parameters.random_seed = random.randint(
+            1,
+            1_000_000
+        )
+
         solver.parameters.max_time_in_seconds = 5
 
         status = solver.Solve(
@@ -1210,18 +862,6 @@ def solve(
             signature
         )
 
-        score = score_schedule(
-
-            schedule,
-
-            frontend_request
-        )
-
-        schedule['score'] = round(
-            score,
-            3
-        )
-
         schedules.append(
             schedule
         )
@@ -1234,18 +874,12 @@ def solve(
 
             break
 
-    schedules.sort(
-
-        key=lambda s:
-            s['score'],
-
-        reverse=True
-    )
-
     return {
 
         'success': True,
 
         'schedules': schedules
     }
+
+
 
