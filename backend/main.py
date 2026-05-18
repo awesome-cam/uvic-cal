@@ -1115,6 +1115,67 @@ def solve(
             break
 
     
+    def calculate_display_span(
+        schedule
+    ):
+
+        day_map = {}
+
+        for bundle in schedule['bundles']:
+
+            for meeting in bundle['meetings']:
+
+                key = (
+                    bundle['term'],
+                    meeting['day']
+                )
+
+                if key not in day_map:
+
+                    day_map[key] = {
+
+                        'start':
+                            meeting['startMinutes'],
+
+                        'end':
+                            meeting['endMinutes']
+                    }
+
+                else:
+
+                    day_map[key]['start'] = min(
+
+                        day_map[key]['start'],
+
+                        meeting['startMinutes']
+                    )
+
+                    day_map[key]['end'] = max(
+
+                        day_map[key]['end'],
+
+                        meeting['endMinutes']
+                    )
+
+        total_span = 0
+
+        for info in day_map.values():
+
+            total_span += (
+
+                info['end']
+                -
+                info['start']
+            )
+
+        return total_span
+
+    
+    schedules.sort(
+
+        key=lambda s:
+            calculate_display_span(s)
+    )
 
     return {
 
