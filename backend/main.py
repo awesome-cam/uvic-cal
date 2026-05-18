@@ -253,6 +253,10 @@ def create_model(
     bundle_vars = {}
     objective_terms = []
 
+    priority_multiplier = random.choice(
+        [0, 1, 3]
+    )
+
     #
     # Filter bundles by
     # hard constraints
@@ -330,8 +334,9 @@ def create_model(
 
             #
             # Optimization:
-            # prioritize higher
-            # priority courses
+            # minimize sadness
+            # from lower-priority
+            # course choices
             #
 
             bundle_priority = 1
@@ -368,8 +373,18 @@ def create_model(
                         course['priority']
                     )
 
+            sadness_delta = (
+                5 - bundle_priority
+            )
+
+            sadness_cost = (
+                sadness_delta
+                *
+                priority_multiplier
+            )
+
             objective_terms.append(
-                bundle_priority * var
+                sadness_cost * var
             )
 
 
@@ -473,6 +488,156 @@ def create_model(
 
     #
     # Optimization:
+    # total time spent
+    # at school
+    #
+
+    DAYS = [
+        'Mon',
+        'Tue',
+        'Wed',
+        'Thu',
+        'Fri',
+        'Sat',
+        'Sun'
+    ]
+
+    TERMS = [
+        '202609',
+        '202701'
+    ]
+
+    for term in TERMS:
+
+        for day in DAYS:
+
+            used_vars = []
+
+            start_candidates = []
+            end_candidates = []
+
+            for info in bundle_vars.values():
+
+                bundle = info['bundle']
+                var = info['var']
+
+                if (
+                    bundle['term']
+                    !=
+                    term
+                ):
+
+                    continue
+
+                matching_meetings = [
+
+                    meeting
+
+                    for meeting in
+                    bundle['meetings']
+
+                    if (
+                        meeting['day']
+                        ==
+                        day
+                    )
+                ]
+
+                if len(matching_meetings) == 0:
+
+                    continue
+
+                used_vars.append(var)
+
+                for meeting in matching_meetings:
+
+                    start_candidates.append(
+                        meeting['startMinutes']
+                    )
+
+                    end_candidates.append(
+                        meeting['endMinutes']
+                    )
+
+            if len(used_vars) == 0:
+
+                continue
+
+            day_used = model.NewBoolVar(
+                f'used_{term}_{day}'
+            )
+
+            earliest_start = model.NewIntVar(
+                0,
+                1440,
+                f'start_{term}_{day}'
+            )
+
+            latest_end = model.NewIntVar(
+                0,
+                1440,
+                f'end_{term}_{day}'
+            )
+
+            day_span = model.NewIntVar(
+                0,
+                1440,
+                f'span_{term}_{day}'
+            )
+
+            model.AddMaxEquality(
+                day_used,
+                used_vars
+            )
+
+            model.AddMinEquality(
+                earliest_start,
+                start_candidates
+            )
+
+            model.AddMaxEquality(
+                latest_end,
+                end_candidates
+            )
+
+            model.Add(
+                day_span
+                ==
+                latest_end
+                -
+                earliest_start
+            ).OnlyEnforceIf(
+                day_used
+            )
+
+            model.Add(
+                day_span == 0
+            ).OnlyEnforceIf(
+                day_used.Not()
+            )
+
+            #
+            # Count used day
+            # as 2 hours
+            #
+
+            objective_terms.append(
+                120 * day_used
+            )
+
+            #
+            # Penalize total
+            # time spent
+            # at school
+            #
+
+            objective_terms.append(
+                day_span
+            )
+
+
+    #
+    # Optimization:
     # semester balancing
     #
 
@@ -544,7 +709,7 @@ def create_model(
     #
 
     objective_terms.append(
-        -100 * difference
+        10 * difference
     )
 
 
@@ -591,7 +756,7 @@ def create_model(
                     info['var'] == 0
                 )
 
-    model.Maximize(
+    model.Minimize(
         sum(objective_terms)
     )
 
@@ -622,16 +787,6 @@ def extract_solution(
         'bundles':
             selected_bundles
     }
-
-#
-# SCORING
-#
-
-
-
-
-
-
 
 @app.post("/solve")
 def solve(
@@ -880,6 +1035,8 @@ def solve(
 
         'schedules': schedules
     }
+
+
 
 
 
