@@ -25,6 +25,98 @@ async function validateRequest(
     }
 
     /*
+        Validate day availability
+    */
+
+    const availability =
+
+        request
+            .hardConstraints
+            ?.dayAvailability;
+
+    if (!availability) {
+
+        errors.push(
+            'Day availability is missing.'
+        );
+    }
+    else {
+
+        let enabledDayCount = 0;
+
+        for (
+            const [
+                day,
+                rules
+            ]
+
+            of Object.entries(
+                availability
+            )
+        ) {
+
+            if (
+                rules.enabled
+            ) {
+
+                enabledDayCount++;
+
+                if (
+
+                    typeof rules.earliestStart !==
+                    'number'
+                ) {
+
+                    errors.push(
+
+                        `${day} earliest start ` +
+
+                        `must be valid.`
+                    );
+                }
+
+                if (
+
+                    typeof rules.latestEnd !==
+                    'number'
+                ) {
+
+                    errors.push(
+
+                        `${day} latest end ` +
+
+                        `must be valid.`
+                    );
+                }
+
+                if (
+
+                    rules.earliestStart
+                    >=
+                    rules.latestEnd
+                ) {
+
+                    errors.push(
+
+                        `${day} earliest start ` +
+
+                        `must be before latest end.`
+                    );
+                }
+            }
+        }
+
+        if (
+            enabledDayCount === 0
+        ) {
+
+            errors.push(
+                'At least one day must be enabled.'
+            );
+        }
+    }
+
+    /*
         Track duplicates globally
     */
 

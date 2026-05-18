@@ -536,6 +536,44 @@ def calculate_break_score(
 
     return 1.0 - normalized
 
+def calculate_semester_balance_score(
+    schedule
+):
+
+    fall_count = 0
+    spring_count = 0
+
+    for bundle in schedule['bundles']:
+
+        if (
+            bundle['term']
+            ==
+            '202609'
+        ):
+
+            fall_count += 1
+
+        elif (
+            bundle['term']
+            ==
+            '202701'
+        ):
+
+            spring_count += 1
+
+    difference = abs(
+        fall_count -
+        spring_count
+    )
+
+    if difference <= 1:
+        return 1.0
+
+    if difference == 2:
+        return 0.3
+
+    return 0.0
+
 def get_personality_weights(
     personality
 ):
@@ -544,44 +582,50 @@ def get_personality_weights(
 
         'balanced': {
 
-            'course': 0.45,
-            'compact': 0.35,
-            'breaks': 0.20
+            'course': 0.35,
+            'balance': 0.35,
+            'compact': 0.20,
+            'breaks': 0.10
         },
 
         'course-first': {
 
-            'course': 0.70,
-            'compact': 0.15,
-            'breaks': 0.15
+            'course': 0.55,
+            'balance': 0.25,
+            'compact': 0.10,
+            'breaks': 0.10
         },
 
         'compact': {
 
-            'course': 0.20,
-            'compact': 0.65,
-            'breaks': 0.15
+            'course': 0.15,
+            'balance': 0.35,
+            'compact': 0.40,
+            'breaks': 0.10
         },
 
         'relaxed': {
 
-            'course': 0.20,
-            'compact': 0.20,
-            'breaks': 0.60
+            'course': 0.15,
+            'balance': 0.35,
+            'compact': 0.10,
+            'breaks': 0.40
         },
 
         'ultra-compact': {
 
             'course': 0.10,
-            'compact': 0.80,
+            'balance': 0.30,
+            'compact': 0.50,
             'breaks': 0.10
         },
 
         'low-stress': {
 
-            'course': 0.20,
-            'compact': 0.10,
-            'breaks': 0.70
+            'course': 0.15,
+            'balance': 0.35,
+            'compact': 0.05,
+            'breaks': 0.45
         }
     }
 
@@ -630,11 +674,23 @@ def score_schedule(
         )
     )
 
+    balance_score = (
+        calculate_semester_balance_score(
+            schedule
+        )
+    )
+
     total_score = (
 
         course_score
         *
         weights['course']
+
+        +
+
+        balance_score
+        *
+        weights['balance']
 
         +
 
@@ -658,6 +714,11 @@ def score_schedule(
 
         'course': round(
             course_score,
+            3
+        ),
+
+        'balance': round(
+            balance_score,
             3
         ),
 
