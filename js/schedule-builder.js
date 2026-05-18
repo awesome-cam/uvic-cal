@@ -21,6 +21,16 @@ const DEFAULT_EARLIEST =
 const DEFAULT_LATEST =
     22 * 60;
 
+function normalizeCourseCode(
+    input
+) {
+
+    return input
+        .toUpperCase()
+        .replace(/\s+/g, '')
+        .trim();
+}
+
 function minutesToLabel(
     minutes
 ) {
@@ -231,10 +241,59 @@ function createSoftPreferencesHtml() {
                 margin-top:20px;
                 display:flex;
                 flex-direction:column;
-                gap:12px;
+                gap:20px;
                 max-width:600px;
             "
         >
+
+            <div>
+
+                <label>
+
+                    Delivery Preference:
+
+                </label>
+
+                <div style="margin-top:8px;">
+
+                    <select
+                        id="deliveryMode"
+                        style="
+                            width:100%;
+                            padding:8px;
+                        "
+                    >
+
+                        <option
+                            value="face-to-face"
+                            selected
+                        >
+
+                            Face-to-face only
+
+                        </option>
+
+                        <option
+                            value="allow-online"
+                        >
+
+                            Allow mixed / online
+
+                        </option>
+
+                        <option
+                            value="online-only"
+                        >
+
+                            Online only
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
 
             <div>
 
@@ -244,73 +303,73 @@ function createSoftPreferencesHtml() {
 
                 </label>
 
-            </div>
+                <div style="margin-top:8px;">
 
-            <div>
+                    <select
+                        id="schedulePersonality"
+                        style="
+                            width:100%;
+                            padding:8px;
+                        "
+                    >
 
-                <select
-                    id="schedulePersonality"
-                    style="
-                        width:100%;
-                        padding:8px;
-                    "
-                >
+                        <option value="balanced" selected>
 
-                    <option value="balanced" selected>
+                            Balanced —
+                            Good overall schedules
+                            with decent compactness
+                            and strong course choices
 
-                        Balanced —
-                        Good overall schedules
-                        with decent compactness
-                        and strong course choices
+                        </option>
 
-                    </option>
+                        <option value="course-first">
 
-                    <option value="course-first">
+                            Course-First —
+                            Maximizes preferred
+                            courses even if the
+                            schedule shape is worse
 
-                        Course-First —
-                        Maximizes preferred
-                        courses even if the
-                        schedule shape is worse
+                        </option>
 
-                    </option>
+                        <option value="compact">
 
-                    <option value="compact">
+                            Compact —
+                            Strongly prefers fewer
+                            campus days while still
+                            keeping reasonable flow
 
-                        Compact —
-                        Strongly prefers fewer
-                        campus days while still
-                        keeping reasonable flow
+                        </option>
 
-                    </option>
+                        <option value="relaxed">
 
-                    <option value="relaxed">
+                            Relaxed —
+                            Prefers smoother days
+                            with fewer exhausting
+                            idle gaps
 
-                        Relaxed —
-                        Prefers smoother days
-                        with fewer exhausting
-                        idle gaps
+                        </option>
 
-                    </option>
+                        <option value="ultra-compact">
 
-                    <option value="ultra-compact">
+                            Ultra-Compact —
+                            Aggressively minimizes
+                            days on campus;
+                            ideal for commuters
 
-                        Ultra-Compact —
-                        Aggressively minimizes
-                        days on campus;
-                        ideal for commuters
+                        </option>
 
-                    </option>
+                        <option value="low-stress">
 
-                    <option value="low-stress">
+                            Low-Stress —
+                            Prioritizes comfortable
+                            pacing and avoids long
+                            dead periods
 
-                        Low-Stress —
-                        Prioritizes comfortable
-                        pacing and avoids long
-                        dead periods
+                        </option>
 
-                    </option>
+                    </select>
 
-                </select>
+                </div>
 
             </div>
 
@@ -587,14 +646,14 @@ function buildGroups() {
                 entry => {
 
                     const code =
-                        entry
-                            .querySelector(
-                                'input'
-                            )
-                            .value
+                        normalizeCourseCode(
 
-                            .trim()
-                            .toUpperCase();
+                            entry
+                                .querySelector(
+                                    'input'
+                                )
+                                .value
+                        );
 
                     if (!code) {
                         return;
@@ -693,7 +752,12 @@ function buildRequest() {
         hardConstraints: {
 
             dayAvailability:
-                buildDayAvailability()
+                buildDayAvailability(),
+
+            deliveryMode:
+                document.getElementById(
+                    'deliveryMode'
+                ).value
         },
 
         softPreferences: {
@@ -785,5 +849,4 @@ document
             }
         }
     );
-
 
