@@ -257,10 +257,6 @@ def create_model(
         [0, 1, 3]
     )
 
-    priority_multiplier = random.choice(
-        [0, 1, 3]
-    )
-
     #
     # Filter bundles by
     # hard constraints
@@ -965,18 +961,7 @@ def solve(
             signature
         )
 
-        score = score_schedule(
-
-            schedule,
-
-            frontend_request
-        )
-
-        schedule['score'] = round(
-            score,
-            3
-        )
-
+        
         schedules.append(
             schedule
         )
@@ -997,6 +982,7 @@ def solve(
 
         'schedules': schedules
     }
+
 
 
 
