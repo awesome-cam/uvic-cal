@@ -945,6 +945,112 @@ def solve(
 
     used_signatures = set()
 
+
+
+        #
+    # Compute best achievable
+    # semester balance
+    #
+
+    total_requested_courses = sum(
+
+        group['pick']
+
+        for group in request_groups
+    )
+
+    forced_fall = 0
+    forced_spring = 0
+
+    for course_bundles in all_course_bundles:
+
+        available_terms = set(
+
+            bundle['term']
+
+            for bundle in course_bundles
+        )
+
+        if (
+            len(available_terms)
+            == 1
+        ):
+
+            only_term = list(
+                available_terms
+            )[0]
+
+            if only_term == '202609':
+
+                forced_fall += 1
+
+            elif only_term == '202701':
+
+                forced_spring += 1
+
+    remaining_courses = (
+
+        total_requested_courses
+
+        -
+
+        forced_fall
+
+        -
+
+        forced_spring
+    )
+
+    best_possible_difference = None
+
+    for extra_fall in range(
+        remaining_courses + 1
+    ):
+
+        extra_spring = (
+
+            remaining_courses
+            -
+            extra_fall
+        )
+
+        final_fall = (
+            forced_fall +
+            extra_fall
+        )
+
+        final_spring = (
+            forced_spring +
+            extra_spring
+        )
+
+        difference = abs(
+            final_fall -
+            final_spring
+        )
+
+        if (
+
+            best_possible_difference
+            is None
+
+            or
+
+            difference <
+            best_possible_difference
+        ):
+
+            best_possible_difference = (
+                difference
+            )
+
+    #
+    # Hard-filter bundles that
+    # would violate best balance
+    #
+
+    balanced_schedules_only = []
+
     anchor_candidates = []
 
     for group_index, course_bundles in enumerate(
@@ -977,32 +1083,33 @@ def solve(
                             crn
                         )
 
-                course_count = len(
-                    request_groups
-                )
+        course_count = len(
+            request_groups
+        )
 
-                if course_count <= 4:
+        if course_count <= 4:
 
-                    max_anchors = 2
+            max_anchors = 2
 
-                elif course_count <= 6:
+        elif course_count <= 6:
 
-                    max_anchors = 3
+            max_anchors = 3
 
-                else:
+        else:
 
-                    max_anchors = 5
+            max_anchors = 5
 
-                for crn in lecture_crns[:max_anchors]:
+        for crn in lecture_crns[:max_anchors]:
 
-                    anchor_candidates.append({
+            anchor_candidates.append({
 
-                        'group_index':
-                            group_index,
+                'group_index':
+                    group_index,
 
-                        'lecture_crn':
-                            crn
-                    })
+                'lecture_crn':
+                    crn
+            })
+
 
 
 
@@ -1049,6 +1156,45 @@ def solve(
             solver,
             bundle_vars
         )
+
+                #
+        # Enforce best-achievable
+        # semester balance
+        #
+
+        fall_count = 0
+        spring_count = 0
+
+        for bundle in schedule['bundles']:
+
+            if (
+                bundle['term']
+                ==
+                '202609'
+            ):
+
+                fall_count += 1
+
+            elif (
+                bundle['term']
+                ==
+                '202701'
+            ):
+
+                spring_count += 1
+
+        difference = abs(
+            fall_count -
+            spring_count
+        )
+
+        if (
+            difference
+            >
+            best_possible_difference
+        ):
+
+            continue
 
         signature = '-'.join(
 
