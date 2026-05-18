@@ -194,6 +194,11 @@ function normalizeSection(
         title:
             rawSection.courseTitle,
 
+        instructionalMethod:
+            rawSection
+                .instructionalMethod,
+
+
         delivery:
             rawSection
                 .instructionalMethodDescription,

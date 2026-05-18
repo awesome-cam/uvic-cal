@@ -920,6 +920,12 @@ function renderSchedules(
 
                 No valid schedules found.
 
+                <br><br>
+
+                Try relaxing your delivery
+                preference or widening your
+                available days/times.
+
             </div>
 
         `;
