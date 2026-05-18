@@ -267,3 +267,38 @@ button:hover {
     line-height: 1.6;
 }
 
+.calendar-grid {
+
+    display: flex;
+
+    gap: 24px;
+
+    align-items: flex-start;
+
+    flex-wrap: wrap;
+}
+
+.term-calendar-wrapper {
+
+    flex: 1 1 700px;
+
+    min-width: 700px;
+}
+
+@media (
+    max-width: 1600px
+) {
+
+    .calendar-grid {
+
+        flex-direction: column;
+    }
+
+    .term-calendar-wrapper {
+
+        min-width: auto;
+    }
+}
+
+
+

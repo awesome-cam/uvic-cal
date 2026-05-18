@@ -555,8 +555,11 @@ function renderSchedule(
             schedule
         );
 
-    const termCalendars =
-        Object.entries(
+const termCalendars = `
+
+    <div class="calendar-grid">
+
+        ${Object.entries(
             schedule.terms
         )
 
@@ -587,7 +590,10 @@ function renderSchedule(
                 )
         )
 
-        .join('');
+        .join('')}
+
+    </div>
+`;
 
     return `
 
