@@ -153,11 +153,6 @@ def bundle_respects_delivery_mode(
         )
     ]
 
-    #
-    # No lecture sections found.
-    # Allow bundle.
-    #
-
     if len(lecture_sections) == 0:
 
         return True
@@ -174,10 +169,6 @@ def bundle_respects_delivery_mode(
             .upper()
         )
 
-        #
-        # Face-to-face only
-        #
-
         if (
             delivery_mode
             ==
@@ -187,10 +178,6 @@ def bundle_respects_delivery_mode(
             if method != 'F2F':
 
                 return False
-
-        #
-        # Online only
-        #
 
         elif (
             delivery_mode
@@ -202,10 +189,53 @@ def bundle_respects_delivery_mode(
 
                 return False
 
+    return True
+
+def bundle_has_real_lecture_times(
+    bundle
+):
+
+    lecture_sections = [
+
+        section
+
+        for section in
+        bundle['sections']
+
+        if (
+            section['componentType']
+            ==
+            'lecture'
+        )
+    ]
+
+    #
+    # No lecture sections.
+    # Allow bundle.
+    #
+
+    if len(lecture_sections) == 0:
+
+        return True
+
+    for lecture in lecture_sections:
+
+        meetings = lecture.get(
+            'meetings',
+            []
+        )
+
         #
-        # allow-online
-        # accepts all
+        # Reject lecture sections
+        # with no real meetings.
         #
+
+        if (
+            len(meetings)
+            == 0
+        ):
+
+            return False
 
     return True
 
@@ -244,6 +274,12 @@ def create_model(
             if not bundle_respects_delivery_mode(
                 bundle,
                 delivery_mode
+            ):
+
+                continue
+
+            if not bundle_has_real_lecture_times(
+                bundle
             ):
 
                 continue
@@ -885,6 +921,12 @@ def solve(
 
                 continue
 
+            if not bundle_has_real_lecture_times(
+                bundle
+            ):
+
+                continue
+
             valid_bundles.append(
                 bundle
             )
@@ -1053,3 +1095,4 @@ def solve(
 
         'schedules': schedules
     }
+

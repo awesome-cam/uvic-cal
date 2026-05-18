@@ -209,10 +209,10 @@ function getAsyncLabel(
         )
     ) {
 
-        return '(Online Async)';
+        return '(Async)';
     }
 
-    return '(TBA Days/Times)';
+    return '(TBA)';
 }
 
 function renderTimeLabels() {
@@ -533,35 +533,68 @@ function renderCrnSummary(
                         section
                     )
 
-                    ? getAsyncLabel(
-                        section
-                    )
-
+                    ? `
+                        <span
+                            style="
+                                color:#aa0000;
+                                font-size:12px;
+                                margin-left:6px;
+                            "
+                        >
+                            ${getAsyncLabel(
+                                section
+                            )}
+                        </span>
+                    `
                     : '';
 
                 return `
 
-                    <tr>
+                    <tr
+                        style="
+                            border-bottom:
+                                1px solid #eee;
+                        "
+                    >
 
-                        <td>
+                        <td
+                            style="
+                                padding:8px;
+                            "
+                        >
                             ${section.course}
                         </td>
 
-                        <td>
+                        <td
+                            style="
+                                padding:8px;
+                            "
+                        >
                             ${getComponentShortName(
                                 section
                             )}
                         </td>
 
-                        <td>
+                        <td
+                            style="
+                                padding:8px;
+                            "
+                        >
                             ${section.sequence}
                         </td>
 
-                        <td>
+                        <td
+                            style="
+                                padding:8px;
+                                min-width:220px;
+                            "
+                        >
 
                             <strong>
                                 ${section.crn}
                             </strong>
+
+                            ${asyncLabel}
 
                             <div
                                 style="
@@ -579,22 +612,6 @@ function renderCrnSummary(
                                 }
 
                             </div>
-
-                            ${
-                                asyncLabel
-                                    ? `
-                                        <div
-                                            style="
-                                                font-size:12px;
-                                                color:#aa0000;
-                                                margin-top:2px;
-                                            "
-                                        >
-                                            ${asyncLabel}
-                                        </div>
-                                    `
-                                    : ''
-                            }
 
                         </td>
 
@@ -616,25 +633,37 @@ function renderCrnSummary(
                 style="
                     border-collapse:collapse;
                     width:100%;
-                    max-width:700px;
+                    max-width:800px;
                 "
             >
 
                 <tr>
 
-                    <th align="left">
+                    <th
+                        align="left"
+                        style="padding:8px;"
+                    >
                         Course
                     </th>
 
-                    <th align="left">
+                    <th
+                        align="left"
+                        style="padding:8px;"
+                    >
                         Type
                     </th>
 
-                    <th align="left">
+                    <th
+                        align="left"
+                        style="padding:8px;"
+                    >
                         Section
                     </th>
 
-                    <th align="left">
+                    <th
+                        align="left"
+                        style="padding:8px;"
+                    >
                         CRN / Delivery
                     </th>
 
@@ -685,14 +714,17 @@ function renderScoreSummary(
                 ${scores.course ?? '?'}
 
                 |
+
                 Semester Balance:
                 ${scores.balance ?? '?'}
 
                 |
+
                 Compactness:
                 ${scores.compact ?? '?'}
 
                 |
+
                 Smoothness:
                 ${scores.breaks ?? '?'}
 
@@ -905,3 +937,4 @@ function renderSchedules(
         schedules.length
     );
 }
+

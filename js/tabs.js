@@ -13,6 +13,11 @@ const tabContents = {
     'schedule-builder':
         document.getElementById(
             'schedule-builder-tab'
+        ),
+
+    'help':
+        document.getElementById(
+            'help-tab'
         )
 };
 
@@ -43,9 +48,11 @@ for (const button of tabButtons) {
             const tabName =
                 button.dataset.tab;
 
-            tabContents[tabName]
-                .classList.add('active');
+            tabContents[
+                tabName
+            ].classList.add(
+                'active'
+            );
         }
     );
 }
-
