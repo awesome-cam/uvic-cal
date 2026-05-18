@@ -257,6 +257,10 @@ def create_model(
         [0, 1, 3]
     )
 
+    priority_multiplier = random.choice(
+        [0, 1, 3]
+    )
+
     #
     # Filter bundles by
     # hard constraints
@@ -513,13 +517,9 @@ def create_model(
 
             used_vars = []
 
-            start_candidates = []
-            end_candidates = []
-
             for info in bundle_vars.values():
 
                 bundle = info['bundle']
-                var = info['var']
 
                 if (
                     bundle['term']
@@ -529,7 +529,7 @@ def create_model(
 
                     continue
 
-                matching_meetings = [
+                meetings_for_day = [
 
                     meeting
 
@@ -543,21 +543,13 @@ def create_model(
                     )
                 ]
 
-                if len(matching_meetings) == 0:
+                if len(meetings_for_day) == 0:
 
                     continue
 
-                used_vars.append(var)
-
-                for meeting in matching_meetings:
-
-                    start_candidates.append(
-                        meeting['startMinutes']
-                    )
-
-                    end_candidates.append(
-                        meeting['endMinutes']
-                    )
+                used_vars.append(
+                    info['var']
+                )
 
             if len(used_vars) == 0:
 
@@ -567,72 +559,18 @@ def create_model(
                 f'used_{term}_{day}'
             )
 
-            earliest_start = model.NewIntVar(
-                0,
-                1440,
-                f'start_{term}_{day}'
-            )
-
-            latest_end = model.NewIntVar(
-                0,
-                1440,
-                f'end_{term}_{day}'
-            )
-
-            day_span = model.NewIntVar(
-                0,
-                1440,
-                f'span_{term}_{day}'
-            )
-
             model.AddMaxEquality(
                 day_used,
                 used_vars
             )
 
-            model.AddMinEquality(
-                earliest_start,
-                start_candidates
-            )
-
-            model.AddMaxEquality(
-                latest_end,
-                end_candidates
-            )
-
-            model.Add(
-                day_span
-                ==
-                latest_end
-                -
-                earliest_start
-            ).OnlyEnforceIf(
-                day_used
-            )
-
-            model.Add(
-                day_span == 0
-            ).OnlyEnforceIf(
-                day_used.Not()
-            )
-
             #
-            # Count used day
+            # Count each used day
             # as 2 hours
             #
 
             objective_terms.append(
                 120 * day_used
-            )
-
-            #
-            # Penalize total
-            # time spent
-            # at school
-            #
-
-            objective_terms.append(
-                day_span
             )
 
 
@@ -704,12 +642,22 @@ def create_model(
     )
 
     #
-    # Strongly penalize
-    # imbalance
+    # Hard constraint:
+    # never allow semester
+    # imbalance > 1
+    #
+
+    model.Add(
+        difference <= 1
+    )
+
+    #
+    # Small soft preference
+    # toward perfect balance
     #
 
     objective_terms.append(
-        10 * difference
+        2 * difference
     )
 
 
@@ -1017,6 +965,18 @@ def solve(
             signature
         )
 
+        score = score_schedule(
+
+            schedule,
+
+            frontend_request
+        )
+
+        schedule['score'] = round(
+            score,
+            3
+        )
+
         schedules.append(
             schedule
         )
@@ -1029,13 +989,14 @@ def solve(
 
             break
 
+    
+
     return {
 
         'success': True,
 
         'schedules': schedules
     }
-
 
 
 
