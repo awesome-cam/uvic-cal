@@ -665,6 +665,33 @@ def create_model(
             )
 
             #
+            # Clean unused-day values
+            #
+
+            model.Add(
+                earliest_start == 0
+            ).OnlyEnforceIf(
+                day_used.Not()
+            )
+
+            model.Add(
+                latest_end == 0
+            ).OnlyEnforceIf(
+                day_used.Not()
+            )
+
+            #
+            # Prevent weird span math
+            # on used days
+            #
+
+            model.Add(
+                earliest_start <= latest_end
+            ).OnlyEnforceIf(
+                day_used
+            )
+
+            #
             # Count each used day
             # as 2 hours
             #
