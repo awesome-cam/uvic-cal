@@ -102,10 +102,6 @@ def create_model(
 
     bundle_vars = {}
 
-    #
-    # Create variables
-    #
-
     for group_index, course_bundles in enumerate(
         all_course_bundles
     ):
@@ -195,10 +191,6 @@ def create_model(
                 ]
             )
 
-            #
-            # Skip same group
-            #
-
             if (
                 info_a['group_index']
                 ==
@@ -241,11 +233,6 @@ def create_model(
         )
 
         for bundle_id, info in bundle_vars.items():
-
-            #
-            # ONLY constrain
-            # target group
-            #
 
             if (
                 info['group_index']
@@ -298,12 +285,320 @@ def extract_solution(
             selected_bundles
     }
 
+#
+# SCORING
+#
+
+def calculate_course_score(
+    schedule,
+    request_groups
+):
+
+    score = 0
+    max_score = 0
+
+    for group in request_groups:
+
+        max_priority = max(
+            course['priority']
+            for course in group['courses']
+        )
+
+        max_score += max_priority
+
+    for bundle in schedule['bundles']:
+
+        matched_priority = 0
+
+        for group in request_groups:
+
+            for course in group['courses']:
+
+                code = (
+                    course['code']
+                )
+
+                if any(
+
+                    section[
+                        'subject'
+                    ] +
+                    section[
+                        'courseNumber'
+                    ]
+
+                    == code
+
+                    for section in
+                    bundle['sections']
+                ):
+
+                    matched_priority = max(
+
+                        matched_priority,
+
+                        course['priority']
+                    )
+
+        score += matched_priority
+
+    if max_score == 0:
+        return 0
+
+    return score / max_score
+
+def calculate_compact_score(
+    schedule
+):
+
+    active_days = set()
+
+    for bundle in schedule['bundles']:
+
+        for meeting in bundle['meetings']:
+
+            active_days.add(
+                (
+                    bundle['term'],
+                    meeting['day']
+                )
+            )
+
+    day_count = len(active_days)
+
+    if day_count <= 2:
+        return 1.0
+
+    if day_count == 3:
+        return 0.8
+
+    if day_count == 4:
+        return 0.45
+
+    if day_count == 5:
+        return 0.2
+
+    return 0.0
+
+def calculate_break_score(
+    schedule
+):
+
+    meetings_by_day = {}
+
+    for bundle in schedule['bundles']:
+
+        for meeting in bundle['meetings']:
+
+            key = (
+                bundle['term'],
+                meeting['day']
+            )
+
+            if key not in meetings_by_day:
+
+                meetings_by_day[
+                    key
+                ] = []
+
+            meetings_by_day[
+                key
+            ].append(
+                meeting
+            )
+
+    total_gap_minutes = 0
+
+    for meetings in meetings_by_day.values():
+
+        meetings.sort(
+            key=lambda m:
+                m['startMinutes']
+        )
+
+        for i in range(
+            len(meetings) - 1
+        ):
+
+            gap = (
+
+                meetings[i + 1][
+                    'startMinutes'
+                ]
+
+                -
+
+                meetings[i][
+                    'endMinutes'
+                ]
+            )
+
+            if gap > 0:
+
+                total_gap_minutes += gap
+
+    #
+    # Normalize
+    #
+
+    max_reasonable_gap = 600
+
+    normalized = min(
+        total_gap_minutes /
+        max_reasonable_gap,
+        1.0
+    )
+
+    return 1.0 - normalized
+
+def get_personality_weights(
+    personality
+):
+
+    personalities = {
+
+        'balanced': {
+
+            'course': 0.45,
+            'compact': 0.35,
+            'breaks': 0.20
+        },
+
+        'course-first': {
+
+            'course': 0.70,
+            'compact': 0.15,
+            'breaks': 0.15
+        },
+
+        'compact': {
+
+            'course': 0.20,
+            'compact': 0.65,
+            'breaks': 0.15
+        },
+
+        'relaxed': {
+
+            'course': 0.20,
+            'compact': 0.20,
+            'breaks': 0.60
+        },
+
+        'ultra-compact': {
+
+            'course': 0.10,
+            'compact': 0.80,
+            'breaks': 0.10
+        },
+
+        'low-stress': {
+
+            'course': 0.20,
+            'compact': 0.10,
+            'breaks': 0.70
+        }
+    }
+
+    return personalities.get(
+
+        personality,
+
+        personalities['balanced']
+    )
+
+def score_schedule(
+    schedule,
+    request
+):
+
+    personality = (
+        request[
+            'softPreferences'
+        ][
+            'personality'
+        ]
+    )
+
+    weights = (
+        get_personality_weights(
+            personality
+        )
+    )
+
+    course_score = (
+        calculate_course_score(
+            schedule,
+            request['groups']
+        )
+    )
+
+    compact_score = (
+        calculate_compact_score(
+            schedule
+        )
+    )
+
+    break_score = (
+        calculate_break_score(
+            schedule
+        )
+    )
+
+    total_score = (
+
+        course_score
+        *
+        weights['course']
+
+        +
+
+        compact_score
+        *
+        weights['compact']
+
+        +
+
+        break_score
+        *
+        weights['breaks']
+    )
+
+    schedule['scores'] = {
+
+        'total': round(
+            total_score,
+            3
+        ),
+
+        'course': round(
+            course_score,
+            3
+        ),
+
+        'compact': round(
+            compact_score,
+            3
+        ),
+
+        'breaks': round(
+            break_score,
+            3
+        )
+    }
+
+    return total_score
+
 @app.post("/solve")
 def solve(
     request: SolveRequest
 ):
 
     data = request.data
+
+    frontend_request = (
+        data['request']
+    )
 
     all_course_bundles = (
         data['allCourseBundles']
@@ -349,11 +644,6 @@ def solve(
                             crn
                         )
 
-        #
-        # Limit to 5 lecture anchors
-        # per group
-        #
-
         for crn in lecture_crns[:5]:
 
             anchor_candidates.append({
@@ -365,10 +655,6 @@ def solve(
                     crn
             })
 
-    #
-    # No lecture anchors?
-    #
-
     if (
         len(anchor_candidates)
         == 0
@@ -377,7 +663,7 @@ def solve(
         anchor_candidates = [None]
 
     #
-    # Solve each lecture anchor
+    # Solve each anchor
     #
 
     for anchor_candidate in anchor_candidates:
@@ -436,6 +722,18 @@ def solve(
             signature
         )
 
+        score = score_schedule(
+
+            schedule,
+
+            frontend_request
+        )
+
+        schedule['score'] = round(
+            score,
+            3
+        )
+
         schedules.append(
             schedule
         )
@@ -448,10 +746,17 @@ def solve(
 
             break
 
+    schedules.sort(
+
+        key=lambda s:
+            s['score'],
+
+        reverse=True
+    )
+
     return {
 
         'success': True,
 
         'schedules': schedules
     }
-
