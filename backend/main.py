@@ -1188,13 +1188,29 @@ def solve(
             spring_count
         )
 
-        if (
-            difference
-            >
-            best_possible_difference
-        ):
 
-            continue
+        total_courses = (
+            fall_count +
+            spring_count
+        )
+
+        perfectly_balanced = (
+            total_courses % 2 == 0
+        )
+
+        if perfectly_balanced:
+
+            if difference != 0:
+
+                continue
+
+        else:
+
+            if difference > 1:
+
+                continue
+
+
 
         signature = '-'.join(
 
