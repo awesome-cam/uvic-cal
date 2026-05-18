@@ -134,10 +134,86 @@ def bundle_respects_availability(
 
     return True
 
+def bundle_respects_delivery_mode(
+    bundle,
+    delivery_mode
+):
+
+    lecture_sections = [
+
+        section
+
+        for section in
+        bundle['sections']
+
+        if (
+            section['componentType']
+            ==
+            'lecture'
+        )
+    ]
+
+    #
+    # No lecture sections found.
+    # Allow bundle.
+    #
+
+    if len(lecture_sections) == 0:
+
+        return True
+
+    for lecture in lecture_sections:
+
+        method = (
+
+            lecture.get(
+                'instructionalMethod',
+                ''
+            )
+
+            .upper()
+        )
+
+        #
+        # Face-to-face only
+        #
+
+        if (
+            delivery_mode
+            ==
+            'face-to-face'
+        ):
+
+            if method != 'F2F':
+
+                return False
+
+        #
+        # Online only
+        #
+
+        elif (
+            delivery_mode
+            ==
+            'online-only'
+        ):
+
+            if method == 'F2F':
+
+                return False
+
+        #
+        # allow-online
+        # accepts all
+        #
+
+    return True
+
 def create_model(
     all_course_bundles,
     request_groups,
     availability,
+    delivery_mode,
     forced_anchor=None
 ):
 
@@ -146,24 +222,35 @@ def create_model(
     bundle_vars = {}
 
     #
-    # Filter bundles by availability
+    # Filter bundles by
+    # hard constraints
     #
 
     filtered_course_bundles = []
 
     for course_bundles in all_course_bundles:
 
-        filtered = [
+        filtered = []
 
-            bundle
+        for bundle in course_bundles:
 
-            for bundle in course_bundles
-
-            if bundle_respects_availability(
+            if not bundle_respects_availability(
                 bundle,
                 availability
+            ):
+
+                continue
+
+            if not bundle_respects_delivery_mode(
+                bundle,
+                delivery_mode
+            ):
+
+                continue
+
+            filtered.append(
+                bundle
             )
-        ]
 
         filtered_course_bundles.append(
             filtered
@@ -759,6 +846,15 @@ def solve(
         ]
     )
 
+    delivery_mode = (
+
+        frontend_request[
+            'hardConstraints'
+        ][
+            'deliveryMode'
+        ]
+    )
+
     request_groups = (
         frontend_request[
             'groups'
@@ -766,24 +862,32 @@ def solve(
     )
 
     #
-    # Early validation:
-    # ensure at least some
-    # valid bundles remain
+    # Early validation
     #
 
     for course_bundles in all_course_bundles:
 
-        valid_bundles = [
+        valid_bundles = []
 
-            bundle
+        for bundle in course_bundles:
 
-            for bundle in course_bundles
-
-            if bundle_respects_availability(
+            if not bundle_respects_availability(
                 bundle,
                 availability
+            ):
+
+                continue
+
+            if not bundle_respects_delivery_mode(
+                bundle,
+                delivery_mode
+            ):
+
+                continue
+
+            valid_bundles.append(
+                bundle
             )
-        ]
 
         if len(valid_bundles) == 0:
 
@@ -792,16 +896,12 @@ def solve(
                 'success': False,
 
                 'error':
-                    'No valid bundles remain after availability filtering.'
+                    'No valid bundles remain after filtering.'
             }
 
     schedules = []
 
     used_signatures = set()
-
-    #
-    # Build anchor candidates
-    #
 
     anchor_candidates = []
 
@@ -853,10 +953,6 @@ def solve(
 
         anchor_candidates = [None]
 
-    #
-    # Solve each anchor
-    #
-
     for anchor_candidate in anchor_candidates:
 
         model, bundle_vars = create_model(
@@ -866,6 +962,8 @@ def solve(
             request_groups,
 
             availability,
+
+            delivery_mode,
 
             anchor_candidate
         )
@@ -955,4 +1053,3 @@ def solve(
 
         'schedules': schedules
     }
-

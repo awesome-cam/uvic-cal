@@ -168,6 +168,53 @@ function getComponentShortName(
     return 'SEC';
 }
 
+function sectionIsAsync(
+    section
+) {
+
+    return (
+
+        (
+            !section.meetings
+        )
+
+        ||
+
+        (
+            section.meetings.length
+            === 0
+        )
+    );
+}
+
+function getAsyncLabel(
+    section
+) {
+
+    const method = (
+
+        section
+            .instructionalMethodDescription
+
+        ||
+
+        ''
+    )
+
+    .toLowerCase();
+
+    if (
+        method.includes(
+            'online'
+        )
+    ) {
+
+        return '(Online Async)';
+    }
+
+    return '(TBA Days/Times)';
+}
+
 function renderTimeLabels() {
 
     let html = '';
@@ -352,6 +399,15 @@ function renderTermCalendar(
         sections
     ) {
 
+        if (
+            sectionIsAsync(
+                section
+            )
+        ) {
+
+            continue;
+        }
+
         const color =
             colorMap[
                 section.course
@@ -470,33 +526,82 @@ function renderCrnSummary(
 
     const rows =
         schedule.sections.map(
-            section => `
+            section => {
 
-                <tr>
+                const asyncLabel =
+                    sectionIsAsync(
+                        section
+                    )
 
-                    <td>
-                        ${section.course}
-                    </td>
+                    ? getAsyncLabel(
+                        section
+                    )
 
-                    <td>
-                        ${getComponentShortName(
-                            section
-                        )}
-                    </td>
+                    : '';
 
-                    <td>
-                        ${section.sequence}
-                    </td>
+                return `
 
-                    <td>
-                        <strong>
-                            ${section.crn}
-                        </strong>
-                    </td>
+                    <tr>
 
-                </tr>
+                        <td>
+                            ${section.course}
+                        </td>
 
-            `
+                        <td>
+                            ${getComponentShortName(
+                                section
+                            )}
+                        </td>
+
+                        <td>
+                            ${section.sequence}
+                        </td>
+
+                        <td>
+
+                            <strong>
+                                ${section.crn}
+                            </strong>
+
+                            <div
+                                style="
+                                    font-size:12px;
+                                    color:#666;
+                                    margin-top:2px;
+                                "
+                            >
+
+                                ${
+                                    section
+                                        .instructionalMethodDescription
+                                    ||
+                                    ''
+                                }
+
+                            </div>
+
+                            ${
+                                asyncLabel
+                                    ? `
+                                        <div
+                                            style="
+                                                font-size:12px;
+                                                color:#aa0000;
+                                                margin-top:2px;
+                                            "
+                                        >
+                                            ${asyncLabel}
+                                        </div>
+                                    `
+                                    : ''
+                            }
+
+                        </td>
+
+                    </tr>
+
+                `;
+            }
         ).join('');
 
     return `
@@ -511,7 +616,7 @@ function renderCrnSummary(
                 style="
                     border-collapse:collapse;
                     width:100%;
-                    max-width:600px;
+                    max-width:700px;
                 "
             >
 
@@ -530,7 +635,7 @@ function renderCrnSummary(
                     </th>
 
                     <th align="left">
-                        CRN
+                        CRN / Delivery
                     </th>
 
                 </tr>
@@ -538,6 +643,60 @@ function renderCrnSummary(
                 ${rows}
 
             </table>
+
+        </div>
+
+    `;
+}
+
+function renderScoreSummary(
+    schedule
+) {
+
+    const scores =
+        schedule.scores || {};
+
+    return `
+
+        <div
+            style="
+                margin-bottom:20px;
+                padding:12px;
+                border:1px solid #ddd;
+                border-radius:8px;
+                background:#fafafa;
+                max-width:700px;
+            "
+        >
+
+            <div>
+
+                <strong>
+                    Overall Score:
+                </strong>
+
+                ${scores.total ?? '?'}
+
+            </div>
+
+            <div style="margin-top:8px;">
+
+                Course Match:
+                ${scores.course ?? '?'}
+
+                |
+                Semester Balance:
+                ${scores.balance ?? '?'}
+
+                |
+                Compactness:
+                ${scores.compact ?? '?'}
+
+                |
+                Smoothness:
+                ${scores.breaks ?? '?'}
+
+            </div>
 
         </div>
 
@@ -555,45 +714,45 @@ function renderSchedule(
             schedule
         );
 
-const termCalendars = `
+    const termCalendars = `
 
-    <div class="calendar-grid">
+        <div class="calendar-grid">
 
-        ${Object.entries(
-            schedule.terms
-        )
+            ${Object.entries(
+                schedule.terms
+            )
 
-        .sort(
-            (
-                a,
-                b
-            ) =>
+            .sort(
+                (
+                    a,
+                    b
+                ) =>
 
-                a[0].localeCompare(
-                    b[0]
-                )
-        )
+                    a[0].localeCompare(
+                        b[0]
+                    )
+            )
 
-        .map(
+            .map(
 
-            (
-                [
-                    term,
-                    sections
-                ]
-            ) =>
+                (
+                    [
+                        term,
+                        sections
+                    ]
+                ) =>
 
-                renderTermCalendar(
-                    term,
-                    sections,
-                    colorMap
-                )
-        )
+                    renderTermCalendar(
+                        term,
+                        sections,
+                        colorMap
+                    )
+            )
 
-        .join('')}
+            .join('')}
 
-    </div>
-`;
+        </div>
+    `;
 
     return `
 
@@ -643,6 +802,10 @@ const termCalendars = `
                 </button>
 
             </div>
+
+            ${renderScoreSummary(
+                schedule
+            )}
 
             ${termCalendars}
 
@@ -742,4 +905,3 @@ function renderSchedules(
         schedules.length
     );
 }
-
