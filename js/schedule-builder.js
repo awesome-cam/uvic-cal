@@ -416,6 +416,7 @@ function createGroupHtml(
                 class="group-header"
                 style="
                     display:flex;
+                    justify-content:space-between;
                     align-items:center;
                     gap:16px;
                     margin-bottom:10px;
@@ -423,23 +424,50 @@ function createGroupHtml(
                 "
             >
 
-                <strong>
+                <div
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:16px;
+                        flex-wrap:wrap;
+                    "
+                >
 
-                    Course Group ${groupNumber}
+                    <strong>
 
-                </strong>
+                        Course Group ${groupNumber}
 
-                <div>
+                    </strong>
 
-                    Pick:
+                    <div>
 
-                    <select class="pick-count-select">
+                        Pick:
 
-                        ${createPickOptions()}
+                        <select class="pick-count-select">
 
-                    </select>
+                            ${createPickOptions()}
+
+                        </select>
+
+                    </div>
 
                 </div>
+
+                <button
+                    class="delete-group-button"
+                    style="
+                        background:#cc4444;
+                        color:white;
+                        border:none;
+                        padding:6px 10px;
+                        border-radius:6px;
+                        cursor:pointer;
+                    "
+                >
+
+                    Delete Group
+
+                </button>
 
             </div>
 
@@ -553,6 +581,8 @@ document
             );
 
             attachOrCourseButtons();
+
+            attachDeleteGroupButtons();
         }
     );
 
@@ -606,6 +636,54 @@ function attachOrCourseButtons() {
 
                     `
                 );
+            }
+        );
+    });
+}
+
+function attachDeleteGroupButtons() {
+
+    const buttons =
+        document.querySelectorAll(
+            '.delete-group-button'
+        );
+
+    buttons.forEach(button => {
+
+        if (
+            button.dataset
+                .listenerAttached
+        ) {
+
+            return;
+        }
+
+        button.dataset
+            .listenerAttached =
+            'true';
+
+        button.addEventListener(
+            'click',
+            () => {
+
+                const groups =
+                    document.querySelectorAll(
+                        '.requirement-group'
+                    );
+
+                if (
+                    groups.length <= 1
+                ) {
+
+                    return;
+                }
+
+                const group =
+                    button.closest(
+                        '.requirement-group'
+                    );
+
+                group.remove();
             }
         );
     });
@@ -773,6 +851,8 @@ function buildRequest() {
 }
 
 attachOrCourseButtons();
+
+attachDeleteGroupButtons();
 
 document
     .getElementById(
