@@ -513,9 +513,13 @@ def create_model(
 
             used_vars = []
 
+            conditional_starts = []
+            conditional_ends = []
+
             for info in bundle_vars.values():
 
                 bundle = info['bundle']
+                var = info['var']
 
                 if (
                     bundle['term']
@@ -543,9 +547,65 @@ def create_model(
 
                     continue
 
-                used_vars.append(
-                    info['var']
-                )
+                used_vars.append(var)
+
+                for idx, meeting in enumerate(
+                    meetings_for_day
+                ):
+
+                    start_var = model.NewIntVar(
+                        0,
+                        9999,
+                        f'start_{term}_{day}_{bundle["bundleId"]}_{idx}'
+                    )
+
+                    end_var = model.NewIntVar(
+                        0,
+                        1440,
+                        f'end_{term}_{day}_{bundle["bundleId"]}_{idx}'
+                    )
+
+                    #
+                    # If bundle selected:
+                    # use real meeting times
+                    #
+
+                    model.Add(
+                        start_var
+                        ==
+                        meeting['startMinutes']
+                    ).OnlyEnforceIf(var)
+
+                    model.Add(
+                        end_var
+                        ==
+                        meeting['endMinutes']
+                    ).OnlyEnforceIf(var)
+
+                    #
+                    # If bundle NOT selected:
+                    # neutralize for min/max
+                    #
+
+                    model.Add(
+                        start_var == 9999
+                    ).OnlyEnforceIf(
+                        var.Not()
+                    )
+
+                    model.Add(
+                        end_var == 0
+                    ).OnlyEnforceIf(
+                        var.Not()
+                    )
+
+                    conditional_starts.append(
+                        start_var
+                    )
+
+                    conditional_ends.append(
+                        end_var
+                    )
 
             if len(used_vars) == 0:
 
@@ -555,9 +615,53 @@ def create_model(
                 f'used_{term}_{day}'
             )
 
+            earliest_start = model.NewIntVar(
+                0,
+                9999,
+                f'earliest_{term}_{day}'
+            )
+
+            latest_end = model.NewIntVar(
+                0,
+                1440,
+                f'latest_{term}_{day}'
+            )
+
+            day_span = model.NewIntVar(
+                0,
+                1440,
+                f'span_{term}_{day}'
+            )
+
             model.AddMaxEquality(
                 day_used,
                 used_vars
+            )
+
+            model.AddMinEquality(
+                earliest_start,
+                conditional_starts
+            )
+
+            model.AddMaxEquality(
+                latest_end,
+                conditional_ends
+            )
+
+            model.Add(
+                day_span
+                ==
+                latest_end
+                -
+                earliest_start
+            ).OnlyEnforceIf(
+                day_used
+            )
+
+            model.Add(
+                day_span == 0
+            ).OnlyEnforceIf(
+                day_used.Not()
             )
 
             #
@@ -567,6 +671,15 @@ def create_model(
 
             objective_terms.append(
                 120 * day_used
+            )
+
+            #
+            # Penalize total
+            # span of the day
+            #
+
+            objective_terms.append(
+                day_span
             )
 
 
@@ -982,6 +1095,7 @@ def solve(
 
         'schedules': schedules
     }
+
 
 
 
