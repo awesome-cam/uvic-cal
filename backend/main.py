@@ -977,16 +977,35 @@ def solve(
                             crn
                         )
 
-        for crn in lecture_crns[:5]:
+                course_count = len(
+                    request_groups
+                )
 
-            anchor_candidates.append({
+                if course_count <= 4:
 
-                'group_index':
-                    group_index,
+                    max_anchors = 2
 
-                'lecture_crn':
-                    crn
-            })
+                elif course_count <= 6:
+
+                    max_anchors = 3
+
+                else:
+
+                    max_anchors = 5
+
+                for crn in lecture_crns[:max_anchors]:
+
+                    anchor_candidates.append({
+
+                        'group_index':
+                            group_index,
+
+                        'lecture_crn':
+                            crn
+                    })
+
+
+
 
     if (
         len(anchor_candidates)

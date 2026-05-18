@@ -242,7 +242,7 @@ function createSoftPreferencesHtml() {
                 display:flex;
                 flex-direction:column;
                 gap:20px;
-                max-width:600px;
+                max-width:900px;
             "
         >
 
@@ -259,7 +259,8 @@ function createSoftPreferencesHtml() {
                     <select
                         id="deliveryMode"
                         style="
-                            width:100%;
+                            width:700px;
+                            max-width:100%;
                             padding:8px;
                         "
                     >
@@ -308,7 +309,8 @@ function createSoftPreferencesHtml() {
                     <select
                         id="schedulePersonality"
                         style="
-                            width:100%;
+                            width:700px;
+                            max-width:100%;
                             padding:8px;
                         "
                     >
