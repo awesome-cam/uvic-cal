@@ -71,6 +71,26 @@ def bundles_conflict(
 
     return False
 
+def bundle_contains_course_code(
+    bundle,
+    course_code
+):
+
+    for section in bundle['sections']:
+
+        code = (
+            section['subject']
+            +
+            section['courseNumber']
+        )
+
+        if code == course_code:
+
+            return True
+
+    return False
+
+
 def bundle_contains_lecture_crn(
     bundle,
     lecture_crn
@@ -245,7 +265,8 @@ def create_model(
     request_groups,
     availability,
     delivery_mode,
-    forced_anchor=None
+    forced_anchor=None,
+    forced_course_code=None
 ):
 
     model = cp_model.CpModel()
@@ -840,6 +861,32 @@ def create_model(
                     info['var'] == 0
                 )
 
+    #
+    # Optional course anchor
+    #
+
+    if forced_course_code:
+
+        matching_vars = []
+
+        for info in bundle_vars.values():
+
+            if bundle_contains_course_code(
+                info['bundle'],
+                forced_course_code
+            ):
+
+                matching_vars.append(
+                    info['var']
+                )
+
+        if len(matching_vars) > 0:
+
+            model.Add(
+                sum(matching_vars) >= 1
+            )
+
+
     model.Minimize(
         sum(objective_terms)
     )
@@ -1031,6 +1078,11 @@ def solve(
 
         anchor_candidates = [None]
 
+    #
+    # Phase 1:
+    # lecture-anchor solves
+    #
+
     for anchor_candidate in anchor_candidates:
 
         model, bundle_vars = create_model(
@@ -1115,6 +1167,132 @@ def solve(
             break
 
     
+    #
+    # Phase 2:
+    # if diversity is low,
+    # explore OR-course anchors
+    #
+
+    if (
+        len(schedules)
+        <
+        MAX_SCHEDULES // 2
+    ):
+
+        or_course_codes = []
+
+        for group in request_groups:
+
+            if (
+                group['pick']
+                != 1
+            ):
+
+                continue
+
+            if (
+                len(group['courses'])
+                <= 1
+            ):
+
+                continue
+
+            for course in group['courses']:
+
+                code = course['code']
+
+                if (
+                    code
+                    not in
+                    or_course_codes
+                ):
+
+                    or_course_codes.append(
+                        code
+                    )
+
+        for course_code in or_course_codes:
+
+            model, bundle_vars = create_model(
+
+                all_course_bundles,
+
+                request_groups,
+
+                availability,
+
+                delivery_mode,
+
+                forced_course_code=course_code
+            )
+
+            solver = cp_model.CpSolver()
+
+            solver.parameters.random_seed = random.randint(
+                1,
+                1_000_000
+            )
+
+            solver.parameters.max_time_in_seconds = 5
+
+            status = solver.Solve(
+                model
+            )
+
+            if status not in [
+
+                cp_model.OPTIMAL,
+
+                cp_model.FEASIBLE
+            ]:
+
+                continue
+
+            schedule = extract_solution(
+                solver,
+                bundle_vars
+            )
+
+            signature = '-'.join(
+
+                sorted(
+
+                    crn
+
+                    for bundle in
+                    schedule['bundles']
+
+                    for crn in
+                    bundle['crns']
+                )
+            )
+
+            if (
+                signature
+                in
+                used_signatures
+            ):
+
+                continue
+
+            used_signatures.add(
+                signature
+            )
+
+            schedules.append(
+                schedule
+            )
+
+            if (
+                len(schedules)
+                >=
+                MAX_SCHEDULES
+            ):
+
+                break
+
+
+
     def calculate_display_span(
         schedule
     ):
@@ -1183,6 +1361,7 @@ def solve(
 
         'schedules': schedules
     }
+
 
 
 
