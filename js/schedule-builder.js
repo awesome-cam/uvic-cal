@@ -15,11 +15,88 @@ const DAYS = [
     'Sat'
 ];
 
-const TIME_BLOCKS = [
-    'Morning',
-    'Afternoon',
-    'Evening'
-];
+const DEFAULT_EARLIEST =
+    8 * 60;
+
+const DEFAULT_LATEST =
+    22 * 60;
+
+function minutesToLabel(
+    minutes
+) {
+
+    const hours24 =
+        Math.floor(
+            minutes / 60
+        );
+
+    const mins =
+        minutes % 60;
+
+    const suffix =
+        hours24 >= 12
+            ? 'PM'
+            : 'AM';
+
+    let hours12 =
+        hours24 % 12;
+
+    if (
+        hours12 === 0
+    ) {
+
+        hours12 = 12;
+    }
+
+    return (
+
+        `${hours12}:` +
+
+        mins
+            .toString()
+            .padStart(2, '0') +
+
+        ` ${suffix}`
+    );
+}
+
+function createTimeOptions(
+    selectedMinutes
+) {
+
+    let html = '';
+
+    for (
+        let minutes = 360;
+        minutes <= 1320;
+        minutes += 30
+    ) {
+
+        html += `
+
+            <option
+                value="${minutes}"
+
+                ${
+                    minutes ===
+                    selectedMinutes
+
+                        ? 'selected'
+                        : ''
+                }
+            >
+
+                ${minutesToLabel(
+                    minutes
+                )}
+
+            </option>
+
+        `;
+    }
+
+    return html;
+}
 
 function createCourseHtml() {
 
@@ -71,64 +148,78 @@ function createCourseHtml() {
     `;
 }
 
-function createAvailabilityTable() {
+function createAvailabilityRows() {
 
-    const headerCells =
-        DAYS.map(day => `
-            <th>${day}</th>
-        `).join('');
+    return DAYS.map(day => `
 
-    const rows =
-        TIME_BLOCKS.map(timeBlock => {
+        <div
+            class="availability-row"
+            style="
+                display:flex;
+                align-items:center;
+                gap:12px;
+                margin-bottom:10px;
+                flex-wrap:wrap;
+            "
+        >
 
-            const cells =
-                DAYS.map(day => `
+            <label
+                style="
+                    width:60px;
+                    display:flex;
+                    align-items:center;
+                    gap:6px;
+                "
+            >
 
-                    <td>
+                <input
+                    type="checkbox"
+                    class="day-enabled-checkbox"
+                    data-day="${day}"
+                    checked
+                />
 
-                        <input
-                            type="checkbox"
-                            checked
-                            data-day="${day}"
-                            data-time-block="${timeBlock}"
-                        />
+                ${day}
 
-                    </td>
+            </label>
 
-                `).join('');
+            <div>
 
-            return `
+                Earliest:
 
-                <tr>
+                <select
+                    class="earliest-select"
+                    data-day="${day}"
+                >
 
-                    <td>
-                        ${timeBlock}
-                    </td>
+                    ${createTimeOptions(
+                        DEFAULT_EARLIEST
+                    )}
 
-                    ${cells}
+                </select>
 
-                </tr>
+            </div>
 
-            `;
-        }).join('');
+            <div>
 
-    return `
+                Latest:
 
-        <table class="availability-table">
+                <select
+                    class="latest-select"
+                    data-day="${day}"
+                >
 
-            <tr>
+                    ${createTimeOptions(
+                        DEFAULT_LATEST
+                    )}
 
-                <th></th>
+                </select>
 
-                ${headerCells}
+            </div>
 
-            </tr>
+        </div>
 
-            ${rows}
-
-        </table>
-
-    `;
+    `).join('');
 }
 
 function createSoftPreferencesHtml() {
@@ -228,6 +319,30 @@ function createSoftPreferencesHtml() {
     `;
 }
 
+function createPickOptions() {
+
+    let html = '';
+
+    for (
+        let i = 1;
+        i <= 10;
+        i++
+    ) {
+
+        html += `
+
+            <option value="${i}">
+
+                ${i}
+
+            </option>
+
+        `;
+    }
+
+    return html;
+}
+
 function createGroupHtml(
     groupNumber
 ) {
@@ -236,13 +351,34 @@ function createGroupHtml(
 
         <div class="requirement-group">
 
-            <div class="group-header">
+            <div
+                class="group-header"
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:16px;
+                    margin-bottom:10px;
+                    flex-wrap:wrap;
+                "
+            >
 
                 <strong>
 
                     Course Group ${groupNumber}
 
                 </strong>
+
+                <div>
+
+                    Pick:
+
+                    <select class="pick-count-select">
+
+                        ${createPickOptions()}
+
+                    </select>
+
+                </div>
 
             </div>
 
@@ -268,10 +404,22 @@ scheduleBuilderRoot.innerHTML = `
     <div class="builder-section">
 
         <h3>
-            Days Available
+            Day Availability
         </h3>
 
-        ${createAvailabilityTable()}
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-top:20px;
+                margin-bottom:30px;
+            "
+        >
+
+            ${createAvailabilityRows()}
+
+        </div>
 
         ${createSoftPreferencesHtml()}
 
@@ -414,9 +562,18 @@ function buildGroups() {
     groupElements.forEach(
         groupEl => {
 
+            const pick = parseInt(
+
+                groupEl
+                    .querySelector(
+                        '.pick-count-select'
+                    )
+                    .value
+            );
+
             const group = {
 
-                pick: 1,
+                pick,
 
                 courses: []
             };
@@ -478,6 +635,54 @@ function buildGroups() {
     return groups;
 }
 
+function buildDayAvailability() {
+
+    const availability = {};
+
+    for (
+        const day of DAYS
+    ) {
+
+        const enabled =
+            document.querySelector(
+
+                `.day-enabled-checkbox[data-day="${day}"]`
+
+            ).checked;
+
+        const earliestStart =
+            parseInt(
+
+                document.querySelector(
+
+                    `.earliest-select[data-day="${day}"]`
+
+                ).value
+            );
+
+        const latestEnd =
+            parseInt(
+
+                document.querySelector(
+
+                    `.latest-select[data-day="${day}"]`
+
+                ).value
+            );
+
+        availability[day] = {
+
+            enabled,
+
+            earliestStart,
+
+            latestEnd
+        };
+    }
+
+    return availability;
+}
+
 function buildRequest() {
 
     return {
@@ -487,7 +692,8 @@ function buildRequest() {
 
         hardConstraints: {
 
-            availability: {}
+            dayAvailability:
+                buildDayAvailability()
         },
 
         softPreferences: {
@@ -529,6 +735,11 @@ document
 
             const request =
                 buildRequest();
+
+            console.log(
+                'FINAL REQUEST',
+                request
+            );
 
             const result =
                 await validateRequest(
@@ -574,5 +785,4 @@ document
             }
         }
     );
-
 

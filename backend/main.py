@@ -93,14 +93,89 @@ def bundle_contains_lecture_crn(
 
     return False
 
+def bundle_respects_availability(
+    bundle,
+    availability
+):
+
+    for meeting in bundle['meetings']:
+
+        day = meeting['day']
+
+        day_rules = availability.get(
+            day
+        )
+
+        if not day_rules:
+
+            continue
+
+        if not day_rules['enabled']:
+
+            return False
+
+        if (
+
+            meeting['startMinutes']
+            <
+            day_rules['earliestStart']
+        ):
+
+            return False
+
+        if (
+
+            meeting['endMinutes']
+            >
+            day_rules['latestEnd']
+        ):
+
+            return False
+
+    return True
+
 def create_model(
     all_course_bundles,
+    request_groups,
+    availability,
     forced_anchor=None
 ):
 
     model = cp_model.CpModel()
 
     bundle_vars = {}
+
+    #
+    # Filter bundles by availability
+    #
+
+    filtered_course_bundles = []
+
+    for course_bundles in all_course_bundles:
+
+        filtered = [
+
+            bundle
+
+            for bundle in course_bundles
+
+            if bundle_respects_availability(
+                bundle,
+                availability
+            )
+        ]
+
+        filtered_course_bundles.append(
+            filtered
+        )
+
+    all_course_bundles = (
+        filtered_course_bundles
+    )
+
+    #
+    # Create variables
+    #
 
     for group_index, course_bundles in enumerate(
         all_course_bundles
@@ -128,7 +203,7 @@ def create_model(
             }
 
     #
-    # Exactly one bundle per group
+    # Pick-X constraints
     #
 
     for group_index, course_bundles in enumerate(
@@ -150,8 +225,19 @@ def create_model(
                 ]['var']
             )
 
+        required_pick = (
+
+            request_groups[
+                group_index
+            ][
+                'pick'
+            ]
+        )
+
         model.Add(
-            sum(vars_for_group) == 1
+            sum(vars_for_group)
+            ==
+            required_pick
         )
 
     #
@@ -304,7 +390,10 @@ def calculate_course_score(
             for course in group['courses']
         )
 
-        max_score += max_priority
+        max_score += (
+            max_priority *
+            group['pick']
+        )
 
     for bundle in schedule['bundles']:
 
@@ -436,10 +525,6 @@ def calculate_break_score(
             if gap > 0:
 
                 total_gap_minutes += gap
-
-    #
-    # Normalize
-    #
 
     max_reasonable_gap = 600
 
@@ -604,6 +689,51 @@ def solve(
         data['allCourseBundles']
     )
 
+    availability = (
+
+        frontend_request[
+            'hardConstraints'
+        ][
+            'dayAvailability'
+        ]
+    )
+
+    request_groups = (
+        frontend_request[
+            'groups'
+        ]
+    )
+
+    #
+    # Early validation:
+    # ensure at least some
+    # valid bundles remain
+    #
+
+    for course_bundles in all_course_bundles:
+
+        valid_bundles = [
+
+            bundle
+
+            for bundle in course_bundles
+
+            if bundle_respects_availability(
+                bundle,
+                availability
+            )
+        ]
+
+        if len(valid_bundles) == 0:
+
+            return {
+
+                'success': False,
+
+                'error':
+                    'No valid bundles remain after availability filtering.'
+            }
+
     schedules = []
 
     used_signatures = set()
@@ -671,6 +801,10 @@ def solve(
         model, bundle_vars = create_model(
 
             all_course_bundles,
+
+            request_groups,
+
+            availability,
 
             anchor_candidate
         )
@@ -760,3 +894,4 @@ def solve(
 
         'schedules': schedules
     }
+
