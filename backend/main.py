@@ -274,11 +274,9 @@ def create_model(
     bundle_vars = {}
     objective_terms = []
 
-    #
-    # Course priority cost
-    # measured in equivalent
-    # minutes at school.
-    #
+    priority_multiplier = random.choice(
+        [0, 1, 3]
+    )
 
     #
     # Filter bundles by
@@ -396,21 +394,18 @@ def create_model(
                         course['priority']
                     )
 
-            priority_cost = {
+            sadness_delta = (
+                5 - bundle_priority
+            )
 
-                5: 0,
-                4: 30,
-                3: 60,
-                2: 90,
-                1: 120
-
-            }.get(
-                bundle_priority,
-                120
+            sadness_cost = (
+                sadness_delta
+                *
+                priority_multiplier
             )
 
             objective_terms.append(
-                priority_cost * var
+                sadness_cost * var
             )
 
 
@@ -444,16 +439,6 @@ def create_model(
             ][
                 'pick'
             ]
-        )
-
-        #EKAB
-        print(
-            "Group",
-            group_index,
-            "pick",
-            required_pick,
-            "bundles",
-            len(vars_for_group)
         )
 
         model.Add(
@@ -1190,24 +1175,19 @@ def solve(
 
         for group in request_groups:
 
-            #
-            # Only interesting if there
-            # is more than one possible
-            # course choice.
-            #
+            if (
+                group['pick']
+                != 1
+            ):
 
-            if len(group['courses']) <= group['pick']:
                 continue
 
-            for course in group['courses']:
+            if (
+                len(group['courses'])
+                <= 1
+            ):
 
-                code = course['code']
-
-                if code not in or_course_codes:
-
-                    or_course_codes.append(
-                        code
-                    )
+                continue
 
             for course in group['courses']:
 
@@ -1373,7 +1353,6 @@ def solve(
 
         'schedules': schedules
     }
-
 
 
 
