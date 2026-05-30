@@ -274,9 +274,11 @@ def create_model(
     bundle_vars = {}
     objective_terms = []
 
-    priority_multiplier = random.choice(
-        [0, 1, 3]
-    )
+    #
+    # Course priority cost
+    # measured in equivalent
+    # minutes at school.
+    #
 
     #
     # Filter bundles by
@@ -394,18 +396,21 @@ def create_model(
                         course['priority']
                     )
 
-            sadness_delta = (
-                5 - bundle_priority
-            )
+            priority_cost = {
 
-            sadness_cost = (
-                sadness_delta
-                *
-                priority_multiplier
+                5: 0,
+                4: 30,
+                3: 60,
+                2: 90,
+                1: 120
+
+            }.get(
+                bundle_priority,
+                120
             )
 
             objective_terms.append(
-                sadness_cost * var
+                priority_cost * var
             )
 
 
@@ -1175,19 +1180,24 @@ def solve(
 
         for group in request_groups:
 
-            if (
-                group['pick']
-                != 1
-            ):
+            #
+            # Only interesting if there
+            # is more than one possible
+            # course choice.
+            #
 
+            if len(group['courses']) <= group['pick']:
                 continue
 
-            if (
-                len(group['courses'])
-                <= 1
-            ):
+            for course in group['courses']:
 
-                continue
+                code = course['code']
+
+                if code not in or_course_codes:
+
+                    or_course_codes.append(
+                        code
+                    )
 
             for course in group['courses']:
 
@@ -1353,6 +1363,7 @@ def solve(
 
         'schedules': schedules
     }
+
 
 
 
