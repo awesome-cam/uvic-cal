@@ -42,7 +42,7 @@
           "courseReferenceNumber": "21780",
           "faculty": [],
           "meetingTime": {
-            "beginTime": "1000",
+            "beginTime": "1030",
             "building": "122",
             "buildingDescription": "None specified",
             "campus": "M",
@@ -54,7 +54,7 @@
             "endDate": "Apr 07, 2027",
             "endTime": "1150",
             "friday": false,
-            "hoursWeek": 4,
+            "hoursWeek": 2.66,
             "meetingScheduleType": "LEC",
             "meetingType": "CLAS",
             "meetingTypeDescription": "Every Week",

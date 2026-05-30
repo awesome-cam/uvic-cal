@@ -7283,8 +7283,8 @@
       "creditHourLow": 0,
       "creditHourIndicator": "OR",
       "openSection": true,
-      "linkIdentifier": "A1",
-      "isSectionLinked": true,
+      "linkIdentifier": null,
+      "isSectionLinked": false,
       "subjectCourse": "MECH580",
       "faculty": [],
       "meetingsFaculty": [

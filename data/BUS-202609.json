@@ -127,8 +127,8 @@
             "creditHourSession": 1.5,
             "endDate": "Dec 07, 2026",
             "endTime": "1650",
-            "friday": false,
-            "hoursWeek": 3,
+            "friday": true,
+            "hoursWeek": 2.83,
             "meetingScheduleType": "LEC",
             "meetingType": "CLAS",
             "meetingTypeDescription": "Every Week",
@@ -140,7 +140,7 @@
             "term": "202609",
             "thursday": false,
             "tuesday": false,
-            "wednesday": true
+            "wednesday": false
           },
           "term": "202609"
         }

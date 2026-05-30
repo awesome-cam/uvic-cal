@@ -845,8 +845,8 @@
       "creditHourLow": 0.5,
       "creditHourIndicator": "TO",
       "openSection": true,
-      "linkIdentifier": "A1",
-      "isSectionLinked": true,
+      "linkIdentifier": null,
+      "isSectionLinked": false,
       "subjectCourse": "MBA595",
       "faculty": [],
       "meetingsFaculty": [
@@ -919,8 +919,8 @@
       "creditHourLow": 0.5,
       "creditHourIndicator": "TO",
       "openSection": true,
-      "linkIdentifier": "A1",
-      "isSectionLinked": true,
+      "linkIdentifier": null,
+      "isSectionLinked": false,
       "subjectCourse": "MBA595",
       "faculty": [],
       "meetingsFaculty": [
@@ -993,8 +993,8 @@
       "creditHourLow": 0.5,
       "creditHourIndicator": "TO",
       "openSection": true,
-      "linkIdentifier": "A1",
-      "isSectionLinked": true,
+      "linkIdentifier": null,
+      "isSectionLinked": false,
       "subjectCourse": "MBA595",
       "faculty": [],
       "meetingsFaculty": [
@@ -1067,8 +1067,8 @@
       "creditHourLow": 0.5,
       "creditHourIndicator": "TO",
       "openSection": true,
-      "linkIdentifier": "A1",
-      "isSectionLinked": true,
+      "linkIdentifier": null,
+      "isSectionLinked": false,
       "subjectCourse": "MBA595",
       "faculty": [],
       "meetingsFaculty": [

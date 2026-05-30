@@ -43,25 +43,25 @@ async function run() {
 
     await buttons[0].click();
 
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(5000);
 
     console.log("Selecting term...");
 
     await page.locator(".select2-choice").click();
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
 
     await page.keyboard.type(term);
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
 
     await page.keyboard.press("Enter");
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
 
     await page.keyboard.press("Escape");
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
 
     console.log("Clicking Continue...");
 
@@ -86,11 +86,11 @@ async function run() {
         "#s2id_autogen1"
     ).click();
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
 
     await page.keyboard.type(description);
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(5000);
 
     console.log("Selecting:");
     console.log(description);
@@ -99,7 +99,7 @@ async function run() {
         `#${subject}`
     ).click();
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
 
     console.log("Clicking Search...");
 

@@ -43,7 +43,7 @@
           "faculty": [],
           "meetingTime": {
             "beginTime": "1000",
-            "building": "215",
+            "building": "115",
             "buildingDescription": "None specified",
             "campus": "M",
             "campusDescription": "Main (Gordon Head)",
@@ -117,7 +117,7 @@
           "faculty": [],
           "meetingTime": {
             "beginTime": "0930",
-            "building": "215",
+            "building": "142",
             "buildingDescription": "None specified",
             "campus": "M",
             "campusDescription": "Main (Gordon Head)",

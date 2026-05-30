@@ -930,8 +930,8 @@
           "courseReferenceNumber": "23078",
           "faculty": [],
           "meetingTime": {
-            "beginTime": "1300",
-            "building": "219",
+            "beginTime": "1530",
+            "building": "237",
             "buildingDescription": "None specified",
             "campus": "M",
             "campusDescription": "Main (Gordon Head)",
@@ -940,9 +940,9 @@
             "courseReferenceNumber": "23078",
             "creditHourSession": 1.5,
             "endDate": "Apr 07, 2027",
-            "endTime": "1420",
+            "endTime": "1620",
             "friday": false,
-            "hoursWeek": 3,
+            "hoursWeek": 2.5,
             "meetingScheduleType": "LEC",
             "meetingType": "CLAS",
             "meetingTypeDescription": "Every Week",
@@ -954,7 +954,7 @@
             "term": "202701",
             "thursday": true,
             "tuesday": false,
-            "wednesday": false
+            "wednesday": true
           },
           "term": "202701"
         }
@@ -1004,7 +1004,7 @@
           "courseReferenceNumber": "23079",
           "faculty": [],
           "meetingTime": {
-            "beginTime": "1300",
+            "beginTime": "1530",
             "building": "219",
             "buildingDescription": "None specified",
             "campus": "M",
@@ -1014,9 +1014,9 @@
             "courseReferenceNumber": "23079",
             "creditHourSession": 1.5,
             "endDate": "Apr 07, 2027",
-            "endTime": "1420",
+            "endTime": "1620",
             "friday": false,
-            "hoursWeek": 3,
+            "hoursWeek": 2.5,
             "meetingScheduleType": "LEC",
             "meetingType": "CLAS",
             "meetingTypeDescription": "Every Week",
@@ -1028,7 +1028,7 @@
             "term": "202701",
             "thursday": true,
             "tuesday": false,
-            "wednesday": false
+            "wednesday": true
           },
           "term": "202701"
         }
@@ -1226,7 +1226,7 @@
           "courseReferenceNumber": "23082",
           "faculty": [],
           "meetingTime": {
-            "beginTime": "1430",
+            "beginTime": "1630",
             "building": "214",
             "buildingDescription": "None specified",
             "campus": "M",
@@ -1236,9 +1236,9 @@
             "courseReferenceNumber": "23082",
             "creditHourSession": 0,
             "endDate": "Apr 02, 2027",
-            "endTime": "1620",
+            "endTime": "1820",
             "friday": false,
-            "hoursWeek": 2,
+            "hoursWeek": 1.83,
             "meetingScheduleType": "LAB",
             "meetingType": "CLAS",
             "meetingTypeDescription": "Every Week",

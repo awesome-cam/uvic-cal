@@ -161,7 +161,7 @@
       "subject": "GRS",
       "subjectDescription": "Greek and Roman Studies",
       "sequenceNumber": "A01",
-      "campusDescription": "Online",
+      "campusDescription": "Main (Gordon Head)",
       "scheduleTypeDescription": "Lecture",
       "courseTitle": "Greek and Latin Roots of Medical and Bioscientific Terminology",
       "creditHours": 1.5,
@@ -191,10 +191,10 @@
           "faculty": [],
           "meetingTime": {
             "beginTime": "1600",
-            "building": null,
-            "buildingDescription": null,
-            "campus": null,
-            "campusDescription": null,
+            "building": "115",
+            "buildingDescription": "None specified",
+            "campus": "M",
+            "campusDescription": "Main (Gordon Head)",
             "category": "01",
             "class": "net.hedtech.banner.general.overall.MeetingTimeDecorator",
             "courseReferenceNumber": "11798",
@@ -207,7 +207,7 @@
             "meetingType": "CLAS",
             "meetingTypeDescription": "Every Week",
             "monday": true,
-            "room": null,
+            "room": "None specified",
             "saturday": false,
             "startDate": "Sep 09, 2026",
             "sunday": false,
@@ -221,8 +221,8 @@
       ],
       "reservedSeatSummary": null,
       "sectionAttributes": null,
-      "instructionalMethod": "OL",
-      "instructionalMethodDescription": "Fully Online"
+      "instructionalMethod": "MULTI",
+      "instructionalMethodDescription": "Multi-Access"
     },
     {
       "id": 287234,

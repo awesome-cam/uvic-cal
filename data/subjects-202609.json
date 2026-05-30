@@ -16,6 +16,10 @@
     "description": "Anthropology"
   },
   {
+    "code": "ADS",
+    "description": "Applied Data Science"
+  },
+  {
     "code": "ART",
     "description": "Art"
   },
