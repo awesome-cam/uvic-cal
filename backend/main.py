@@ -441,6 +441,13 @@ def create_model(
             ]
         )
 
+        print(
+            f"PICK CONSTRAINT "
+            f"group={group_index} "
+            f"bundles={len(vars_for_group)} "
+            f"pick={required_pick}"
+        )
+
         model.Add(
             sum(vars_for_group)
             ==
@@ -958,6 +965,16 @@ def solve(
         ]
     )
 
+    print("\n========== NEW SOLVE ==========")
+
+    for idx, group in enumerate(request_groups):
+
+        print(
+            f"GROUP {idx}: "
+            f"pick={group['pick']} "
+            f"courses={[c['code'] for c in group['courses']]}"
+        )
+
     #
     # Early validation
     #
@@ -1001,6 +1018,23 @@ def solve(
                 'error':
                     'No valid bundles remain after filtering.'
             }
+
+    print("\nBUNDLE SUMMARY")
+
+    for idx, course_bundles in enumerate(all_course_bundles):
+
+        print(
+            f"Group {idx}: "
+            f"{len(course_bundles)} bundles"
+        )
+
+        for bundle in course_bundles:
+
+            print(
+                f"  bundle={bundle['bundleId']} "
+                f"term={bundle['term']} "
+                f"crns={bundle['crns']}"
+            )
 
     schedules = []
 
@@ -1109,6 +1143,26 @@ def solve(
 
         status = solver.Solve(
             model
+        )
+
+        status_name = {
+
+            cp_model.OPTIMAL: "OPTIMAL",
+            cp_model.FEASIBLE: "FEASIBLE",
+            cp_model.INFEASIBLE: "INFEASIBLE",
+            cp_model.MODEL_INVALID: "MODEL_INVALID",
+            cp_model.UNKNOWN: "UNKNOWN"
+
+        }.get(
+            status,
+            str(status)
+        )
+
+        print(
+            "ANCHOR:",
+            anchor_candidate,
+            "STATUS:",
+            status_name
         )
 
         if status not in [
@@ -1355,12 +1409,29 @@ def solve(
             calculate_display_span(s)
     )
 
+    print(
+        "\nFINAL SCHEDULE COUNT:",
+        len(schedules)
+    )
+
+    for idx, schedule in enumerate(schedules):
+
+        print(
+            f"SCHEDULE {idx}:",
+            sorted(
+                crn
+                for bundle in schedule['bundles']
+                for crn in bundle['crns']
+            )
+        )
+
     return {
 
         'success': True,
 
         'schedules': schedules
     }
+
 
 
 
