@@ -484,6 +484,14 @@ def create_model(
                 ]
             )
 
+            if (
+                info_a['group_index']
+                ==
+                info_b['group_index']
+            ):
+
+                continue
+
             if bundles_conflict(
 
                 info_a['bundle'],
