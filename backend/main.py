@@ -446,6 +446,16 @@ def create_model(
             ]
         )
 
+        #EKAB
+        print(
+            "Group",
+            group_index,
+            "pick",
+            required_pick,
+            "bundles",
+            len(vars_for_group)
+        )
+
         model.Add(
             sum(vars_for_group)
             ==
