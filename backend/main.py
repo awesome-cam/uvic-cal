@@ -989,6 +989,16 @@ def solve(
                 bundle
             )
 
+        print(
+            "Course bundle count:",
+            len(course_bundles)
+        )
+
+        print(
+            "Valid bundle count:",
+            len(valid_bundles)
+        )
+
         if len(valid_bundles) == 0:
 
             return {
