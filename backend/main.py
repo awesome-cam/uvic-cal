@@ -274,9 +274,11 @@ def create_model(
     bundle_vars = {}
     objective_terms = []
 
-    priority_multiplier = random.choice(
-        [0, 1, 3]
-    )
+    #
+    # Course priority cost
+    # measured in equivalent
+    # minutes at school.
+    #
 
     #
     # Filter bundles by
@@ -394,18 +396,21 @@ def create_model(
                         course['priority']
                     )
 
-            sadness_delta = (
-                5 - bundle_priority
-            )
+            priority_cost = {
 
-            sadness_cost = (
-                sadness_delta
-                *
-                priority_multiplier
+                5: 0,
+                4: 30,
+                3: 60,
+                2: 90,
+                1: 120
+
+            }.get(
+                bundle_priority,
+                120
             )
 
             objective_terms.append(
-                sadness_cost * var
+                priority_cost * var
             )
 
 
@@ -439,13 +444,6 @@ def create_model(
             ][
                 'pick'
             ]
-        )
-
-        print(
-            f"PICK CONSTRAINT "
-            f"group={group_index} "
-            f"bundles={len(vars_for_group)} "
-            f"pick={required_pick}"
         )
 
         model.Add(
@@ -490,14 +488,6 @@ def create_model(
                     bundle_b_id
                 ]
             )
-
-            if (
-                info_a['group_index']
-                ==
-                info_b['group_index']
-            ):
-
-                continue
 
             if bundles_conflict(
 
@@ -692,12 +682,14 @@ def create_model(
                 day_used.Not()
             )
 
-            #
-            # Clean unused-day values
+            # If the day is unused,
+            # force earliest/latest
+            # to the neutral values
+            # used by Min/Max.
             #
 
             model.Add(
-                earliest_start == 0
+                earliest_start == 9999
             ).OnlyEnforceIf(
                 day_used.Not()
             )
@@ -707,6 +699,7 @@ def create_model(
             ).OnlyEnforceIf(
                 day_used.Not()
             )
+
 
             #
             # Prevent weird span math
@@ -965,16 +958,6 @@ def solve(
         ]
     )
 
-    print("\n========== NEW SOLVE ==========")
-
-    for idx, group in enumerate(request_groups):
-
-        print(
-            f"GROUP {idx}: "
-            f"pick={group['pick']} "
-            f"courses={[c['code'] for c in group['courses']]}"
-        )
-
     #
     # Early validation
     #
@@ -1018,23 +1001,6 @@ def solve(
                 'error':
                     'No valid bundles remain after filtering.'
             }
-
-    print("\nBUNDLE SUMMARY")
-
-    for idx, course_bundles in enumerate(all_course_bundles):
-
-        print(
-            f"Group {idx}: "
-            f"{len(course_bundles)} bundles"
-        )
-
-        for bundle in course_bundles:
-
-            print(
-                f"  bundle={bundle['bundleId']} "
-                f"term={bundle['term']} "
-                f"crns={bundle['crns']}"
-            )
 
     schedules = []
 
@@ -1145,26 +1111,6 @@ def solve(
             model
         )
 
-        status_name = {
-
-            cp_model.OPTIMAL: "OPTIMAL",
-            cp_model.FEASIBLE: "FEASIBLE",
-            cp_model.INFEASIBLE: "INFEASIBLE",
-            cp_model.MODEL_INVALID: "MODEL_INVALID",
-            cp_model.UNKNOWN: "UNKNOWN"
-
-        }.get(
-            status,
-            str(status)
-        )
-
-        print(
-            "ANCHOR:",
-            anchor_candidate,
-            "STATUS:",
-            status_name
-        )
-
         if status not in [
 
             cp_model.OPTIMAL,
@@ -1237,33 +1183,25 @@ def solve(
 
         for group in request_groups:
 
-            if (
-                group['pick']
-                != 1
-            ):
+            #
+            # Only interesting if there
+            # is more than one possible
+            # course choice.
+            #
 
-                continue
-
-            if (
-                len(group['courses'])
-                <= 1
-            ):
-
+            if len(group['courses']) <= group['pick']:
                 continue
 
             for course in group['courses']:
 
                 code = course['code']
 
-                if (
-                    code
-                    not in
-                    or_course_codes
-                ):
+                if code not in or_course_codes:
 
                     or_course_codes.append(
                         code
                     )
+
 
         for course_code in or_course_codes:
 
@@ -1409,28 +1347,13 @@ def solve(
             calculate_display_span(s)
     )
 
-    print(
-        "\nFINAL SCHEDULE COUNT:",
-        len(schedules)
-    )
-
-    for idx, schedule in enumerate(schedules):
-
-        print(
-            f"SCHEDULE {idx}:",
-            sorted(
-                crn
-                for bundle in schedule['bundles']
-                for crn in bundle['crns']
-            )
-        )
-
     return {
 
         'success': True,
 
         'schedules': schedules
     }
+
 
 
 
