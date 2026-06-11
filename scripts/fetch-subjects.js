@@ -41,25 +41,25 @@ async function run() {
 
     await buttons[0].click();
 
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(10000);
 
     console.log("Selecting term...");
 
     await page.locator(".select2-choice").click();
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
 
     await page.keyboard.type(term);
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
 
     await page.keyboard.press("Enter");
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
 
     await page.keyboard.press("Escape");
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
 
     console.log("Clicking Continue...");
 

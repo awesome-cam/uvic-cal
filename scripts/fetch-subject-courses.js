@@ -97,7 +97,7 @@ async function run() {
 
     await page.locator(
         `#${subject}`
-    ).click();
+    ).click({ timeout: 10000 });
 
     await page.waitForTimeout(5000);
 
